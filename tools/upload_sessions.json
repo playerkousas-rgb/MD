@@ -1,0 +1,49 @@
+{
+  "note": "one-time pre-authorized Drive resumable sessions",
+  "sessions": [
+    {
+      "id": "REC_工作紀錄.csv",
+      "file_name": "工作紀錄.csv",
+      "folder": "下載及上載紀錄",
+      "folder_id": "1MIB7xz0wfQVRWFlH8y4ozpQ1dgmUVlOD",
+      "size": 0,
+      "sha256": "",
+      "session_uri": "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&supportsAllDrives=True&upload_id=AFy3sg2rtyNK3jRcmKAZ-5nV583ZmA8ZyDdvrwpSH2ebxZ83Vg9w2L045K1Mi1GRuDS90wSLG0p3Mwjz_sXhF3D7EmTvvjEbunboPz8Y-LGExw&session_crd=AHSoBRUwc7PsclVSV_m6HuGte447AlMDB-B20aWQivtQtH_NYngISowh12gRKF9CrKTOqczhDalowdumQVI&upload_protocol=resumable",
+      "content_mime_type": "text/csv",
+      "local_path": "下載及上載紀錄/工作紀錄.csv"
+    },
+    {
+      "id": "REC_工作紀錄.md",
+      "file_name": "工作紀錄.md",
+      "folder": "下載及上載紀錄",
+      "folder_id": "1MIB7xz0wfQVRWFlH8y4ozpQ1dgmUVlOD",
+      "size": 0,
+      "sha256": "",
+      "session_uri": "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&supportsAllDrives=True&upload_id=AP6rU83YIscaCTgCZ6_O2Tpev5PWOqno2zJ0Y2Z1i1VVvc-_ArvnaTmv1xW7opXmIttWDtpQm77VEGbPZIar2Il-_ipo_YpDT0RrTxyrnnSTsQ&session_crd=AHSoBRVJbX8R0UOYlVko_tOEpolSc6Yup32sP5y9UdM8zvVOtkCZN-Yzz7wD-nD0GcGSfjJTaU9y5bAZb3Q&upload_protocol=resumable",
+      "content_mime_type": "text/markdown",
+      "local_path": "下載及上載紀錄/工作紀錄.md"
+    },
+    {
+      "id": "REC_完成報告.md",
+      "file_name": "完成報告.md",
+      "folder": "下載及上載紀錄",
+      "folder_id": "1MIB7xz0wfQVRWFlH8y4ozpQ1dgmUVlOD",
+      "size": 0,
+      "sha256": "",
+      "session_uri": "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&supportsAllDrives=True&upload_id=AFy3sg1rEEDNz6LSfj6ew5ZQvsGwNPH1ut7wgO4cNbbLznb2QJ7j89EPbVYVjr7K6NVNnF1cBIiW8FUFVq0AYefs0M9NsfYVrX5_TVr9ux0amPU&session_crd=AHSoBRWlxbeAyDbGCY5mi-p55TDOKUBL4oTv8iQTSjCyMimP5aYfSvgtqdW4N6ncxt_1NaNbYB4782TOPP0&upload_protocol=resumable",
+      "content_mime_type": "text/markdown",
+      "local_path": "下載及上載紀錄/完成報告.md"
+    },
+    {
+      "id": "REC_分類說明.md",
+      "file_name": "分類說明.md",
+      "folder": "下載及上載紀錄",
+      "folder_id": "1MIB7xz0wfQVRWFlH8y4ozpQ1dgmUVlOD",
+      "size": 0,
+      "sha256": "",
+      "session_uri": "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&supportsAllDrives=True&upload_id=AP6rU83URMNB7rtA1VTtzg6chjwEOZUvyHudUHVqKMklm0IikZtWjfVqwF7xVo-cv_q0q-kAB726hMQ_wKbXt4scm1TlS51z45EBc13eeGUL8w&session_crd=AHSoBRXPDOOe_acCibxcUTUipe1C_a4L87BBlnht3o-akKiJ_a_y_QUnRNuZn1tIdzStZPSb0nfr-ZHVVCc&upload_protocol=resumable",
+      "content_mime_type": "text/markdown",
+      "local_path": "下載及上載紀錄/分類說明.md"
+    }
+  ]
+}

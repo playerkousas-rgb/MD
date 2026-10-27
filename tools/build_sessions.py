@@ -16,7 +16,7 @@ import subprocess
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TSV = os.path.join(ROOT, "tools", "session_uris.tsv")
+TSV = os.environ.get("SESSION_TSV") or os.path.join(ROOT, "tools", "session_uris.tsv")
 PLAN = os.path.join(ROOT, "out", "upload_plan.json")
 OUT = os.path.join(ROOT, "tools", "upload_sessions.json")
 BLOBSHA = os.path.join(ROOT, "tools", "upload_sessions_blob.txt")

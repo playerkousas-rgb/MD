@@ -1,0 +1,713 @@
+[
+  {
+    "id": "1sCZhHGVOzY2TeqY3AXUZQG-fXAESdgRG",
+    "name": "P110-26.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "702764",
+    "sha256Checksum": "ed926e8ba4312b93cd96ef1ea12c2aecd2076f93d613532d065bfd6acaa72441"
+  },
+  {
+    "id": "10pkKbk_cB5vNXZFzHl4kDY7r23tqFUbY",
+    "name": "P095-26.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "709546",
+    "sha256Checksum": "e7187c5f46fd0777587b2d364d5586b01b778d743dff222dbd3ac49e72fea3a8"
+  },
+  {
+    "id": "1IoM85I3cr2suYZx0PnjM_WVBsAjTYQj4",
+    "name": "PolicyCircular_2026_03_AiSPolicy_C.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "262819",
+    "sha256Checksum": "53ee112b0f53e138716402767a6183e20c71154c2fadc61e4744cf3abd8ea096"
+  },
+  {
+    "id": "1941I0h9QCYEVbqHa7ys1rECHfXDN0G5R",
+    "name": "P067-26.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "603673",
+    "sha256Checksum": "f383cb77b1d1305b20aa09174244d5a504e94df5112eb8296cd3997a1059dfc4"
+  },
+  {
+    "id": "1UKjwUn5Q7cDb0bxQb-g6RKoKmQp99kkK",
+    "name": "「性罪行定罪紀錄查核」常見問題.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "243709",
+    "sha256Checksum": "4b0f1cfcd56b47566e64cb8b3fca7a287301ced93635e81ce270412b602de1e8"
+  },
+  {
+    "id": "15fhZOARfEdztc3pv42Gygd-8vnCHBbbP",
+    "name": "PC022026C_性罪行定罪紀錄查核豁免安排.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "319016",
+    "sha256Checksum": "421b0ff323d2966c6615407cb6386da1e64ce88fa25797f3e4d69d30b7daa3fb"
+  },
+  {
+    "id": "1Jz-ymOgAh3n3QxP-97coXdcxAgTtCA_D",
+    "name": "P022-26_Poster.pdf",
+    "parents": [
+      "1FO7C2LtszUeRkL8j3VWmhi_YRNjuixFo"
+    ],
+    "size": "23628313",
+    "sha256Checksum": "024744ed07851b33b2c8fda37b8e0bf039387f80ce4eef546476fc21f8f2eb5f"
+  },
+  {
+    "id": "139tpQGMespgQMCViTte59sOdl_GgulW1",
+    "name": "P022-26.pdf",
+    "parents": [
+      "1FO7C2LtszUeRkL8j3VWmhi_YRNjuixFo"
+    ],
+    "size": "637461",
+    "sha256Checksum": "1e0267bda55e2b66f9ac18b391446388404a2cb4cd54175298c2deaba2f76632"
+  },
+  {
+    "id": "1-tkfivi3_Mai5PP3lCVLCdehXbwM-bDC",
+    "name": "PC012026C_性罪行定罪紀錄查核.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "362307",
+    "sha256Checksum": "e9cedfde615762f8dd7166ce686245afa29b1d45b890fe3fe3772dc597491f17"
+  },
+  {
+    "id": "1r9CuWY7V1CVxMbqICUphQtmCT_2pctyh",
+    "name": "2026_ACR042026C_UniformHandbook.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "187058",
+    "sha256Checksum": "6fb482a3d6f4313202def4a30c2a5fcf73bce694aaf9aacd31503d202999b605"
+  },
+  {
+    "id": "1-gqnhOBnrXB--YWc68NAOQYClkvyhleR",
+    "name": "ACR012026C.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "731118",
+    "sha256Checksum": "b3d795dcc71e3b2eaf64fbdd33f97b9abaad9931df34e29f1bed31fbe5aaa7b6"
+  },
+  {
+    "id": "1TV_lPh8zLhBVWmufeTj-0sq5DaFWoFyE",
+    "name": "AC032026C.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "281220",
+    "sha256Checksum": "b091d48668cc29f1e601d0893baf5189e8799a63d40af81e6651aff63fa3280c"
+  },
+  {
+    "id": "15r_iolftD_rFb4Cp-NX5aYWxBWl8mXcd",
+    "name": "P011-26.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "347299",
+    "sha256Checksum": "4580252388e4d42701219c69414405f7e451ac722dd1554a52505b1d6f2d44ef"
+  },
+  {
+    "id": "1EWDk9F73IiZ0WJeW2dJNQRiiXvJ4ODvt",
+    "name": "P010-26.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "322194",
+    "sha256Checksum": "d85ac189e4612ceb7fc4923815fcfdbe2b21791e90dad403d7cb85bcf9453db9"
+  },
+  {
+    "id": "1cXk4x0bQExZfLjUpXFSMAn3QVN4AKpXv",
+    "name": "P008-26-.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "502768",
+    "sha256Checksum": "86d70966042d2687d2f9bfde42b874ca3a6b9d3ad394fd4bd111c93de6b2322b"
+  },
+  {
+    "id": "1aOdWYAb_RrZ7TF-kM0-d7Nju7XlTzCct",
+    "name": "Procurement_exception-list-_20251218_.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "287859",
+    "sha256Checksum": "5abcaed9a4474120e0acc4848bedc971884b3ca660ecd9b92604f985e776c5e9"
+  },
+  {
+    "id": "1i3LTJX_6mSCzTX21PhPZ8UUahItgQqJD",
+    "name": "ACR242025C_童軍勳章及獎勵等級名單.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "374610",
+    "sha256Checksum": "36e804160baeb8ff083913aa44bc438c020551b099a8c82f85e9824b10933f25"
+  },
+  {
+    "id": "1UtkbgAkIF78gF90PXKSdtE_DzTm4Yqb0",
+    "name": "PC092025C_有關保障成員之政策及指引.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "347603",
+    "sha256Checksum": "b8a1ab08f5e83357823aeaf787606d08e085701f4d57a2d48da3eac0cf99d818"
+  },
+  {
+    "id": "18So3SI6en1N-QVLlT-9oLRuj1WKaeA5W",
+    "name": "P089-25.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "508668",
+    "sha256Checksum": "0e2f954c12fba2f26f0c9250a3c1fde8630b2b1ea73da1931c10eb965f90e222"
+  },
+  {
+    "id": "1RMfzAFKxcXVtz4_uLR2qlDlGHKVPJDa1",
+    "name": "Decoration-Circular_Chi__202508.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "137800",
+    "sha256Checksum": "7fb266099cb650acafe26982b3e3f405cf9a81c28aa2bde22dd559167979453e"
+  },
+  {
+    "id": "12YalzXxSncpkv56Gg81HVMPpNSUHADK9",
+    "name": "pc072025c_SustainabilityFramework.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "406230",
+    "sha256Checksum": "a571ae9bde579ca869afb52887d57268526bfd7e7688ba1e1a69a2bad68a0273"
+  },
+  {
+    "id": "1-g8sZZnnX3iK27f-1OPFVmCTmQwcBv8z",
+    "name": "P087-25.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "642337",
+    "sha256Checksum": "cad16357e376cc87abac09875da6c329a31c5e9716c772580c39cff79a6fc3ec"
+  },
+  {
+    "id": "17ZTf67DpA-c5cuI4FzDy6GcG0WPHQ-W3",
+    "name": "PC062025C_Safe-from-Harm-Policy_C.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "464346",
+    "sha256Checksum": "0bd13aebc1eef78e6b958e26435183300c81c9c74a7da2f668e8915e1d3cefeb"
+  },
+  {
+    "id": "1Jx_mRHDJAVdx93WcynyEJIaVYLYRLDSe",
+    "name": "P063-25.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "2606408",
+    "sha256Checksum": "f4042dbd126e951214dc578f7e38c2f1063bc8730ffecdcc9e2541e48e646857"
+  },
+  {
+    "id": "1l5yHGUeLsWcfYBgAo6qSKZPVtceQLmkq",
+    "name": "PC052025C_申請領袖／總監委任之必修課程.pdf",
+    "parents": [
+      "1yycd3irfgStJN5u2kPvpB2OATuFnqo5I"
+    ],
+    "size": "83321",
+    "sha256Checksum": "e295f4f2a03f0188303bdb4d4726a2f308260e188f14261773cedad084801b80"
+  },
+  {
+    "id": "1BFymPk__GAOnv4AXdcbfvBMbRkAeNkGL",
+    "name": "PC042025C_領袖的委任資格.pdf",
+    "parents": [
+      "1yycd3irfgStJN5u2kPvpB2OATuFnqo5I"
+    ],
+    "size": "77027",
+    "sha256Checksum": "477cb05687e73f3a99fd8c7dbd37a5df63d85bb5b757b54bc7bf922845cb322e"
+  },
+  {
+    "id": "12eeXmUAEkhs6qAacSg2N_70OmresWjbC",
+    "name": "PC032025C_常務基本訓練班.pdf",
+    "parents": [
+      "1yycd3irfgStJN5u2kPvpB2OATuFnqo5I"
+    ],
+    "size": "161242",
+    "sha256Checksum": "11635cfa783308eabe13b0f4dc0274695338bc253cb3b70b96d8e7d05a267631"
+  },
+  {
+    "id": "1KV0OxvmLiV1pAQbNjl0AVjOQsLg_AEDa",
+    "name": "T3125_Apr_C_Basic_Qualifications_for_the_Appointment_of_TTmembers.pdf",
+    "parents": [
+      "1yycd3irfgStJN5u2kPvpB2OATuFnqo5I"
+    ],
+    "size": "421576",
+    "sha256Checksum": "d0309c5e53017053f2dea6ccbfe0b8953236a1e9c64387d873c4f1cc011ff07d"
+  },
+  {
+    "id": "11v2-EbgqKPoerxS3fWHiZVVW7F9b5VYn",
+    "name": "pc022025_童軍服務指引.pdf",
+    "parents": [
+      "1yycd3irfgStJN5u2kPvpB2OATuFnqo5I"
+    ],
+    "size": "354921",
+    "sha256Checksum": "946c604370962431e19e1c87b510f1fbcbcfd64c8c36a2c2185fd45a13595181"
+  },
+  {
+    "id": "18fG8Hm4PqU-xLJcNJZTnEcyXb-mLetgo",
+    "name": "T525_Feb_C_Wood-Badge-Training-Scheme.pdf",
+    "parents": [
+      "1yycd3irfgStJN5u2kPvpB2OATuFnqo5I"
+    ],
+    "size": "977375",
+    "sha256Checksum": "48939e22145ed445b0edb47691545e1ea53cbc71a5b469e51eb49c579bd58437"
+  },
+  {
+    "id": "1XZeTNDzQgUtkq38ijU_ex6rOCZZANU_N",
+    "name": "T625_Feb_C_Qualifications_of_the_Staff_Team_of_Leader_Training_Courses.pdf",
+    "parents": [
+      "1yycd3irfgStJN5u2kPvpB2OATuFnqo5I"
+    ],
+    "size": "141831",
+    "sha256Checksum": "f9ae4d7c2bc27034e9d9825683542bbacd2d1f073f15191d0ae475e2dac9756d"
+  },
+  {
+    "id": "1XHcIfdwDIw0GEDB9ED5dCtUWCa_iJGn7",
+    "name": "T725_Feb_C_List_and_Numbering_System_for_Certificates_of_Leader_Training_Courses.pdf",
+    "parents": [
+      "1yycd3irfgStJN5u2kPvpB2OATuFnqo5I"
+    ],
+    "size": "375558",
+    "sha256Checksum": "e7d13c3f0e6d2e73e362212379f40f0e6ffb34271288c43fd2757faf4f87fd08"
+  },
+  {
+    "id": "1Pra1sk6_k_oqZlWhPofXF8ouL31399wO",
+    "name": "P012-25.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "527487",
+    "sha256Checksum": "624eb62e00b0f03d41b91c6fe2e3fd0a1546527c3550498d894015869d5fac62"
+  },
+  {
+    "id": "1qSec0JK4x3UCNbIYLCrP7wlIRQNyyHnk",
+    "name": "PC052024C_Scout-Jacket.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "168375",
+    "sha256Checksum": "356457b130c89c275f7b2837651f4975a7df33f459ff32e8b16ec86c1189f1ec"
+  },
+  {
+    "id": "14l_cFbY6kLGz0z7wvvvvca4jFRHpiHAz",
+    "name": "P089-24.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "604723",
+    "sha256Checksum": "3d2bb2110f61deb2ad8d80691b9074a3369776d4c879c649f0efbfd43d7041bb"
+  },
+  {
+    "id": "11BLhCtPA-nl9xlrUVcwL55slm-bYS9Uh",
+    "name": "P060-24.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "197183",
+    "sha256Checksum": "a31cd867d99a49adcb1b2b2dd27f559f5e577bdeee2407ceeff9dc23e69d5e4a"
+  },
+  {
+    "id": "1wQifsw0WcMg3F5zOI36pZFTQh4-Gg2ZA",
+    "name": "GNFM-_Oct-2020_-Final__2024_-updated-title.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "565248",
+    "sha256Checksum": "2377f198b7d442a59e7659f014e70b04ca8b1f2a2c5b6db2927276d70107f849"
+  },
+  {
+    "id": "1UhFDbC3wkC_KlLvxegjGN0EY8l9ukPpC",
+    "name": "PolicyCircular_042024_C_v2.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "374854",
+    "sha256Checksum": "12ba6e8d142c1c73d8f61dd873f1da0a1ffd025609774e44591306c9111ad8af"
+  },
+  {
+    "id": "1lHJduu6PdRIqPTXlLiD3rp-uZxeqgEfM",
+    "name": "ACR082024C_處理不當行為及投訴程序.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "515826",
+    "sha256Checksum": "1730707f55199030f56873036d2214d5e8fb9920b9fc28c1940bf86fbe34a94e"
+  },
+  {
+    "id": "1OUZZubyxnzA-zDTVh7KwLY7LmfvdG8Q8",
+    "name": "Circular_童軍技能整合認可安排_Chi.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "409378",
+    "sha256Checksum": "46ccaad2e997568ac344da30019faa76062ba370f6049ca992920fbb8c420a27"
+  },
+  {
+    "id": "1PZGN2csL2En9TBykcmVTg8G55eT8XRaZ",
+    "name": "TN_plus-Annexures_-_Final-January-2024_r1.1.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "2735406",
+    "sha256Checksum": "17322da198672b85f07633ea025b8e08f30d647991f5928dc85b43990283ef14"
+  },
+  {
+    "id": "1llmskbmK2klg7NlbfMWU_ITiImF9S7WA",
+    "name": "PCR_2024_1_Chi.pdf",
+    "parents": [
+      "1yycd3irfgStJN5u2kPvpB2OATuFnqo5I"
+    ],
+    "size": "224752",
+    "sha256Checksum": "a5fa20663bf08ed6a2f77f9ecca322c6fc440934cb23275838c14d543b08f11b"
+  },
+  {
+    "id": "1H_abwDf-4Ypc1kO5cf-FhvgNt2v9VSTJ",
+    "name": "P005-24.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "723562",
+    "sha256Checksum": "eb8b0b61ad04da9664cd561c5607d5c032c6eaee96b7eede4963a91e3152ddf4"
+  },
+  {
+    "id": "1Oqpdu0V0O0UbiOrtu2Hz6X8-tfDBRrQZ",
+    "name": "PC_2023_02_ITSecurity_C.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "406412",
+    "sha256Checksum": "fa02919fb9c4010de7fddf12d87fcb3e769eb1b9715e52d582ce2e63e6881e98"
+  },
+  {
+    "id": "1mVdOPVZ7iD0ZlKEuT2KAWLSx-UyPKVRG",
+    "name": "IT01-23_HK-Scouts-App-Launch-and-Installation_Chi.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "333858",
+    "sha256Checksum": "752e209f028027c665ebe1f9c798c1c14155710680f51bdce962a0f1b81c15a0"
+  },
+  {
+    "id": "1ONrdquGJwkxLAzUygAf4j8NU5qvH5GeL",
+    "name": "CIR_0523_Chi_MoP_v2512.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "1904437",
+    "sha256Checksum": "50758503762e958cf88caa08e4f0dc73ba3be3aa05120aeeee03057089f79acb"
+  },
+  {
+    "id": "1f_yCGvjEz0U4YdWXmhjmWzeWwRQ8i9OD",
+    "name": "P013-23.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "2311837",
+    "sha256Checksum": "3579fdecbcbf087dfc426647ccd06ba331231ac393bcf4a76809edf0ac19a74a"
+  },
+  {
+    "id": "18VXKcoAppegz8BZeDiq28IPKCNzkbMm2",
+    "name": "P007-23.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "3620640",
+    "sha256Checksum": "1d35701c57c1d78c390557fe235be66e4917fa46342212f03dd5d7a3c01662bb"
+  },
+  {
+    "id": "1WXmBWbdMvJDPGomdmrEc8iZ-CjpramaW",
+    "name": "AC292022.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "63200",
+    "sha256Checksum": "617969e143ff898c581c9e31dff399d1c55455d612e243bff0f3d022fb9e2201"
+  },
+  {
+    "id": "1JEEZRrvd9_WNsYrZN3e-5E8U8zT_nsYW",
+    "name": "CIR_0820_Chi_WS-Policy_Revised.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "333071",
+    "sha256Checksum": "9301fce7866eef8e7d1eaf394eaf1f00f28a08515651d14f6a170961e2ad65b6"
+  },
+  {
+    "id": "1Ixg-ZJjqV_i8xew36KgIzAZH1Cpz8AsJ",
+    "name": "deposit.pdf",
+    "parents": [
+      "1twnA9JQdg1vyirIVVbs3iFxUoG4GrY6U"
+    ],
+    "size": "170948",
+    "sha256Checksum": "dd3bc49e1cfe0ea8e6d60c4c257001ee6762efd26d0ec62abf1188116cc93f19"
+  },
+  {
+    "id": "1YojOamNuxxmOH5e5ndh2k4q1zkF-hkV4",
+    "name": "MidWeekMember.pdf",
+    "parents": [
+      "1twnA9JQdg1vyirIVVbs3iFxUoG4GrY6U"
+    ],
+    "size": "1934092",
+    "sha256Checksum": "bafea7cbafefa7df83db0f096eaa6a79c5055fa2612cc84e45c771bba5bfcc17"
+  },
+  {
+    "id": "1v8PoCWzc9mXDSPpIFC736sABSZZxpkUw",
+    "name": "PC152018C.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "244119",
+    "sha256Checksum": "4ce14cd296c370da76198f9d9f350c8f7e6d55d5a691b09afe2bb1d1b9ce2ad3"
+  },
+  {
+    "id": "1HHjzHjnWEdNzDrsg_DBH9Wt_8F8_aEqV",
+    "name": "02.pdf",
+    "parents": [
+      "1twnA9JQdg1vyirIVVbs3iFxUoG4GrY6U"
+    ],
+    "size": "211845",
+    "sha256Checksum": "fc28939b15c6d928118c33c2dcf5e67c25b5cb935d45642b873ad57a6f69381e"
+  },
+  {
+    "id": "12ttHGYhLqZlLSk9jXfk-aSFYYk7hqtqn",
+    "name": "T5914_Nov_C_SAS_Pioneering_Syllabus_Revised.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "85332",
+    "sha256Checksum": "2f404b9c884656f8f2c0a0098821581f68843d54fdec47ce96f3bc326f3bdae7"
+  },
+  {
+    "id": "1TYDClp9llfRxrxefP8PU5V9P5dVIcIfO",
+    "name": "T3814_Aug_C_Pioneering_Policy.pdf",
+    "parents": [
+      "1TciFcUnNNEOyLG4L_vXm841eBcI_LRyi"
+    ],
+    "size": "88661",
+    "sha256Checksum": "7f9271ff2f9336399858f5d80ac1803aee7f65c7ede6cd12196f6e18584b766e"
+  },
+  {
+    "id": "1WveYvat_iGf2nr6YDCmzmQUbEKniMkID",
+    "name": "a.pdf",
+    "parents": [
+      "1twnA9JQdg1vyirIVVbs3iFxUoG4GrY6U"
+    ],
+    "size": "330058",
+    "sha256Checksum": "443b613c73011a7c736b40a3d1b2157512dc56dc0ac3f3940161acb996be081d"
+  },
+  {
+    "id": "1pV8d5is5_CbBz1aSko-IBX9NC1pAjSvI",
+    "name": "POR_C_20260917.pdf",
+    "parents": [
+      "1gw09h_tdCNw6XmkdnDWIYFY7l3ax1tBJ"
+    ],
+    "size": "1558349",
+    "sha256Checksum": "03381e0cf884666c91d5cc4df24316609eab99821ea65837017332a837ac0728"
+  },
+  {
+    "id": "1HlXcYltCxYxqe96xQIRY5QyrLtN7LozD",
+    "name": "01 小童軍活動指引(第三版).pdf",
+    "parents": [
+      "1FO7C2LtszUeRkL8j3VWmhi_YRNjuixFo"
+    ],
+    "size": "2903496",
+    "sha256Checksum": "d9c1db6731db16015cf41e5680073006f561722084c3fc5687fe9f76c6be2082"
+  },
+  {
+    "id": "1rs-FY19b5zOuGK9Ms0D7aW7cSA8yfLUF",
+    "name": "(Chi)Cub Scout Section Training Scheme_20260809.pdf",
+    "parents": [
+      "1FO7C2LtszUeRkL8j3VWmhi_YRNjuixFo"
+    ],
+    "size": "4667481",
+    "sha256Checksum": "5ae52586acfb37c00d2f90aa50ed4535087b49b122020bdc2a37e122f27df6df"
+  },
+  {
+    "id": "1iznEJ0xMyNh6sRZSIHZVb1mwm_Qx4J8x",
+    "name": "03_Scout Training Scheme_Chi_20260606.pdf",
+    "parents": [
+      "1FO7C2LtszUeRkL8j3VWmhi_YRNjuixFo"
+    ],
+    "size": "19060771",
+    "sha256Checksum": "cb8784c1e8f497a62e615bfac324ee7218f144921b5247f542302fbbb61903dc"
+  },
+  {
+    "id": "12IYR5upl9HT_LP1gAEQfGs2PEhhcuM1E",
+    "name": "04_Venture Training Scheme_Bilingual_20260814.pdf",
+    "parents": [
+      "1FO7C2LtszUeRkL8j3VWmhi_YRNjuixFo"
+    ],
+    "size": "6555509",
+    "sha256Checksum": "e0447edde2e0f9cc9ad7c744315e5d2d1ad121124e0e5802f0221538bbf1efa0"
+  },
+  {
+    "id": "1ZsKp0epHKrfdG4BijjiotNKh48j0OkJf",
+    "name": "05 Rover Section Training Scheme - Chi (v 20260519) no ISBN.pdf",
+    "parents": [
+      "1FO7C2LtszUeRkL8j3VWmhi_YRNjuixFo"
+    ],
+    "size": "2953275",
+    "sha256Checksum": "42c296a3f3d5d999ed2cf5c3a52cbe653d71e049e791f9334808f224493cf5b1"
+  },
+  {
+    "id": "16E85FmJJ7Qmuzo5sMhwwkzh9u4LIjyqi",
+    "name": "P068-26.pdf",
+    "parents": [
+      "1yycd3irfgStJN5u2kPvpB2OATuFnqo5I"
+    ],
+    "size": "276280",
+    "sha256Checksum": "5595e0260acf93fd486c4a05607c312cad327bbab41438cf702bc277532be44c"
+  },
+  {
+    "id": "1x9GOJvBEAnvtHdN8hLNWyarjy3SKN7bA",
+    "name": "P062-26.pdf",
+    "parents": [
+      "1yycd3irfgStJN5u2kPvpB2OATuFnqo5I"
+    ],
+    "size": "262613",
+    "sha256Checksum": "55eedc1555c8bf67caae8c5d1133f64e7ebc4c5c664c7edaa9581390a06727f1"
+  },
+  {
+    "id": "1yIVlF2uSLjBjz0n21712GcZvszSDNuA0",
+    "name": "ACR062026C_2026年週年註冊及統計社會服務與訓練活動統計.pdf",
+    "parents": [
+      "1yycd3irfgStJN5u2kPvpB2OATuFnqo5I"
+    ],
+    "size": "408594",
+    "sha256Checksum": "51a5ee160374301a4a239e10d39dac22101cf66a98ad5f9bc1ef9b199ec254b8"
+  },
+  {
+    "id": "1GRVH0hXmPbwI8-gJLpEmgZ9ZDTj863fP",
+    "name": "C_AdmCir_2025.pdf",
+    "parents": [
+      "1yycd3irfgStJN5u2kPvpB2OATuFnqo5I"
+    ],
+    "size": "299048",
+    "sha256Checksum": "d4de763e97892d82d16e1d1e0735df33b9f44f4d63cc3e6a79b49cc0d50451b2"
+  },
+  {
+    "id": "1EIwLmQHW22xbYv3lT5TPuAKYXkfxRxWx",
+    "name": "AiS202025_SAHKLibrary_C.pdf",
+    "parents": [
+      "1yycd3irfgStJN5u2kPvpB2OATuFnqo5I"
+    ],
+    "size": "347680",
+    "sha256Checksum": "132719dd198f996bd9f4d690479d758d3475ac6f07942b15127926e293b99bc4"
+  },
+  {
+    "id": "1hOV8Zt-rqaZtt_oPqXsACz5LF16TUHD2",
+    "name": "ACR192026C_2027年功績獎勵及感謝狀提名.pdf",
+    "parents": [
+      "1yycd3irfgStJN5u2kPvpB2OATuFnqo5I"
+    ],
+    "size": "201424",
+    "sha256Checksum": "81be0c1adea7a445be872ce531fa9dd9d187abc066d65077f3e956ade8d039d1"
+  },
+  {
+    "id": "1Kur6yDLe6sUWdOgNtUnbecGGK3YC0xH1",
+    "name": "Adm21_26_LKN.pdf",
+    "parents": [
+      "1twnA9JQdg1vyirIVVbs3iFxUoG4GrY6U"
+    ],
+    "size": "575527",
+    "sha256Checksum": "685480ecf2189bc644d2c2eda9c5172f816843aebbb4247f66f18960ad07d137"
+  },
+  {
+    "id": "1bdFyBr-M-w--YzFW5LGzSInHzFsf2qFq",
+    "name": "碩士課程學科豁免證明信申請表.pdf",
+    "parents": [
+      "1Su2w51bpN-yIuDA5SYgiIKaJzPYzWN9r"
+    ],
+    "size": "152079",
+    "sha256Checksum": "cc2356cdcef3bd595799b02785386c9e33cd24b1b067b7484fbd7d053ff7d24f"
+  },
+  {
+    "id": "1KbGFkqcy4FXMIb-fhzhCxusnEqHVmdt4",
+    "name": "HYABU_2025C_form.pdf",
+    "parents": [
+      "1oFTIqYonFPnAvE0akcYuN11t28XQmJ9A"
+    ],
+    "size": "414688",
+    "sha256Checksum": "009c7f722b21a743024f4f1beaaf5cc788abe5d78668777998264612c6f823e2"
+  },
+  {
+    "id": "1I-9ZQBdOnKy14mqH0xB8uMfDhCA9yqDo",
+    "name": "HYABT_2022C_form.pdf",
+    "parents": [
+      "1oFTIqYonFPnAvE0akcYuN11t28XQmJ9A"
+    ],
+    "size": "320008",
+    "sha256Checksum": "c136e71d728902ae0e6ce6148062bd558b650ba8867f499b0c98d883da76576d"
+  },
+  {
+    "id": "19fGus3OyA87r1UFpANlPI7p6JuhTVVEN",
+    "name": "T07c_Young_Leaders_Development_Scheme_Overseas_Activities_Subsidy_form.pdf",
+    "parents": [
+      "1oFTIqYonFPnAvE0akcYuN11t28XQmJ9A"
+    ],
+    "size": "127362",
+    "sha256Checksum": "ac846b0ac0e264d43b127526b66c77805b458f93a6fbc3d89198a12bffda96f4"
+  },
+  {
+    "id": "1QMkKKs38AP4oh3BkqY_AeI-jYwG8LrEm",
+    "name": "T06c_Subsidy_Scheme_for_Needy_Leaders_Training_form.pdf",
+    "parents": [
+      "1oFTIqYonFPnAvE0akcYuN11t28XQmJ9A"
+    ],
+    "size": "112670",
+    "sha256Checksum": "829678bc506f59383c4b0a5424a8327de11a7966fabd7abed86a9c3870464da6"
+  },
+  {
+    "id": "1FODIHjyNzPGzsRwpS9Hhjt5SNaqTJhcx",
+    "name": "DEV04-FFA_AppForm_Chi.pdf",
+    "parents": [
+      "1oFTIqYonFPnAvE0akcYuN11t28XQmJ9A"
+    ],
+    "size": "1130174",
+    "sha256Checksum": "29430da4e70494a9ae95b9319b9d46fe28b767922873ffbb017e3de5182e1029"
+  },
+  {
+    "id": "19Qj5ITrldlWPEJMw7l2q8psLoDYnwIG-",
+    "name": "DEV05-FFA_Report_Chi.pdf",
+    "parents": [
+      "1oFTIqYonFPnAvE0akcYuN11t28XQmJ9A"
+    ],
+    "size": "1763294",
+    "sha256Checksum": "81fc74fb116658854d78865ac3ee7805948bf666e03ebbd75fd2c4e71cbf15b3"
+  },
+  {
+    "id": "1oPUXwYQCYq2h2j55AvD1VF5dn37FaQZO",
+    "name": "SSSF_2022C_form.pdf",
+    "parents": [
+      "1oFTIqYonFPnAvE0akcYuN11t28XQmJ9A"
+    ],
+    "size": "348010",
+    "sha256Checksum": "972818bd7a4a311c8976073aefb1a8f0533d975f9571ecc13dcf66633d57eb53"
+  },
+  {
+    "id": "1P5M_SLf0EC1_GmU3lZjc38XS33OX6J6D",
+    "name": "PT39.pdf",
+    "parents": [
+      "1oFTIqYonFPnAvE0akcYuN11t28XQmJ9A"
+    ],
+    "size": "291102",
+    "sha256Checksum": "72995e3b7c3058ca7646861e22498f835d4c7c73aa85856a710a1326e09c68dc"
+  }
+]

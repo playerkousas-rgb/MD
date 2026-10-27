@@ -51,6 +51,18 @@ REVIEW = {
 }
 AFFILIATE = {"51", "52", "54", "57", "70"}
 ENGLISH_ONLY = {"16", "37", "41"}
+
+# Byte-identical copies that already existed in the user's Drive BEFORE this
+# task. Confirmed by SHA-256 from Drive metadata. Nothing was deleted or
+# overwritten; the new copies live in the new target folders.
+PREEXISTING = {
+    "48": "`working/p007-23.pdf`（1wqGSILPx0oKACJoLxMflb5oKQpzAnU66）及 `童軍支部各級徽章簽發及領取 P007-23.pdf`（1ecV6JNWsMhOhEBgel91sagLgP-Z6UQ5C）",
+    "60": "`working/(Chi)Cub Scout Section Training Scheme_20260809.pdf`（1hHhQMqUPjFXUHZXhx1gw67M2rfcLK_Yc）及清單所附 Drive 原檔（19StE5sobEUb8DOSkW0e57T0j784S6-R5）",
+    "63": "`working/Rover Section Training Scheme - Chi (v 20260519) no ISBN.pdf`（16v5QPyO87UzJ00CNiDFY44pwR4Xxgzhk）及清單所附 Drive 原檔（16DQ-MhjRp3LU5Im3IoeJQGqi0Rhgx0iw）",
+}
+# The five Google Drive sources were already present in Drive as shared
+# originals; this task copied (not re-uploaded) them into the target folder.
+DRIVE_SOURCE_ITEMS = {"59", "60", "61", "62", "63"}
 PRIORITY = {"58", "08", "18", "23", "25", "26", "10", "49", "37", "12",
             "59", "60", "61", "62", "63"}
 
@@ -106,6 +118,8 @@ def main():
             remarks.append("【語言】此文件只提供英文版。")
         if it["id"] in PRIORITY:
             remarks.append("【優先】清單列為優先下載項目。")
+        if it["id"] in PREEXISTING:
+            remarks.append("【既有重複】此 SHA-256 在你原有的 Drive 已存在相同內容的另一份檔案：%s。已保留原有檔案，未刪除、未覆蓋；本份為分類資料夾內的新副本。" % PREEXISTING[it["id"]])
         if it["source_type"] == "google_drive":
             remarks.append("【來源】Google Drive 原檔；以 copy_file 複製原檔，SHA-256 與官方原檔核對一致。")
         else:
