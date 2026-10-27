@@ -1,0 +1,35 @@
+{
+  "repo": "playerkousas-rgb/MD",
+  "generated_utc": "2026-10-27T12:14:58Z",
+  "bundle_bytes": 92330773,
+  "bundle_sha256": "5b71096928d5f2c99e732b00b66ea342abed5baa6832bf41e13f270c7dfef95a",
+  "chunk_bytes": 25165824,
+  "parts": [
+    {
+      "part": 0,
+      "blob_sha": "ace845c0c4c5b8f3500cc9020610d7fb2dbb7f68",
+      "bytes": 25165824,
+      "part_sha256": "27e788eac7b409516c538c0085c440d6c67a3ba2222a22e664425bbbb5b426f0"
+    },
+    {
+      "part": 1,
+      "blob_sha": "1bc5d95f51ed7a4b97b0e568a03234ce887f5701",
+      "bytes": 25165824,
+      "part_sha256": "2b959a03ddb732763671a92637afb42bab5f5782f620ed25b85d8d442882a932"
+    },
+    {
+      "part": 2,
+      "blob_sha": "9375f4147f8ed7108a03f57d65abf5253755f578",
+      "bytes": 25165824,
+      "part_sha256": "b7a53b42de046a853671b7e1755ec175ad52d1ebe19755e437840df27891c077"
+    },
+    {
+      "part": 3,
+      "blob_sha": "c99bc316ea377c201f407f8e6250b9c35c7fe11a",
+      "bytes": 16833301,
+      "part_sha256": "74fc6f483dce3dfcdca3f3a19163ca3075fed06d305fb0e797d8c0f9502a68f5"
+    }
+  ],
+  "contents": "tar.gz of out/: verified categorised PDFs + download_report.json + download_summary.txt",
+  "note": "Dangling blobs; not referenced by any commit. Retrieve with tools/fetch_blobs.py."
+}
