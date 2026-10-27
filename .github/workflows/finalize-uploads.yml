@@ -1,0 +1,74 @@
+name: Finalize Drive resumable uploads
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/upload_sessions.json'
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Restore verified PDFs from dangling blobs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          python3 tools/fetch_blobs.py
+          echo "restored files:"
+          find out/dl -type f -name '*.pdf' | wc -l
+
+      - name: Fix session placeholder sha256 values
+        run: |
+          python3 - << 'PY'
+          import json, hashlib, os
+          p = 'tools/upload_sessions.json'
+          cfg = json.load(open(p, encoding='utf-8'))
+          for s in cfg['sessions']:
+              f = os.path.join('out', 'dl', s['folder'], s['file_name'])
+              if os.path.isfile(f):
+                  d = open(f, 'rb').read()
+                  s['size'] = len(d)
+                  s['sha256'] = hashlib.sha256(d).hexdigest()
+          json.dump(cfg, open(p, 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
+          print('sessions:', len(cfg['sessions']))
+          PY
+
+      - name: Finalize uploads (PUT bytes to pre-authorized session URIs)
+        run: python3 tools/finalize_uploads.py
+
+      - name: Commit results
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f tools/upload_results.json
+          git diff --quiet && git diff --staged --quiet || git commit -m "chore: Drive resumable upload results"
+          git pull --rebase origin "${GITHUB_REF_NAME}" || true
+          git push origin "HEAD:${GITHUB_REF_NAME}" || true
+
+      - name: Summary
+        run: |
+          python3 - << 'PY'
+          import json, os
+          p = 'tools/upload_results.json'
+          if not os.path.exists(p):
+              print('no results file'); raise SystemExit(0)
+          rs = json.load(open(p, encoding='utf-8')).get('results', [])
+          ok = [r for r in rs if r['status'] == 'ok']
+          bad = [r for r in rs if r['status'] != 'ok']
+          print('ok=%d failed=%d' % (len(ok), len(bad)))
+          for r in bad:
+              print('  FAIL', r['id'], r['file_name'], r.get('error'), (r.get('response') or '')[:200])
+          PY
