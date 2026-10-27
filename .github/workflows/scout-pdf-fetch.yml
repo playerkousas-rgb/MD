@@ -1,0 +1,56 @@
+name: Fetch and verify Scout PDFs
+
+# Download engine for the 童軍PDF補收 task.
+# The Arena sandbox can only reach github.com, so this workflow (running on a
+# GitHub-hosted runner with normal internet access) fetches the official PDFs
+# listed in the checked-in collection list, verifies each one is a real PDF,
+# and exposes the result as a downloadable Actions artifact.
+# It only runs on the task working branch and touches no existing repo content.
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/scout_pdf_manifest.json'
+      - 'tools/download_scout_pdfs.py'
+      - 'tools/build_manifest.py'
+      - '.github/workflows/scout-pdf-fetch.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Rebuild manifest from the checked-in list
+        run: python tools/build_manifest.py
+
+      - name: Download and verify every PDF
+        env:
+          SCOUT_OUT: ${{ github.workspace }}/out
+        run: python tools/download_scout_pdfs.py
+
+      - name: Upload verified, categorised PDFs
+        uses: actions/upload-artifact@v4
+        with:
+          name: scout-pdfs-classified
+          path: ${{ github.workspace }}/out
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Write run summary
+        if: always()
+        run: |
+          if [ -f out/download_summary.txt ]; then
+            cat out/download_summary.txt >> "$GITHUB_STEP_SUMMARY"
+          fi

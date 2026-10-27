@@ -1,0 +1,5 @@
+# Working artefacts for the 童軍PDF補收 download task (not committed)
+out/
+__pycache__/
+*.pyc
+*.zip
