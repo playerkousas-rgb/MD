@@ -18,10 +18,29 @@ if not exist "%PS1%" goto nops1
 where powershell >nul 2>nul
 if errorlevel 1 goto nops
 
-if exist ".venv\.deps-ok" goto ready
+REM ---- Decide whether setup is needed.
+REM Do NOT just test .venv\.deps-ok: a folder copied from an older run
+REM carries an old .venv built with Python 3.10, and that venv can never
+REM install PyMuPDF 2.0 (requires_python >=3.11). The result would be
+REM plain-text .md with no headings or tables, silently.
+if not exist ".venv\Scripts\python.exe" goto needsetup
+if not exist ".venv\.deps-ok" goto needsetup
+".venv\Scripts\python.exe" -c "import sys; raise SystemExit(0 if sys.version_info[:2] >= (3, 11) else 1)" >nul 2>nul
+if errorlevel 1 goto venvold
+goto ready
+
+:venvold
+echo.
+echo   [!] This folder has an old .venv built with Python below 3.11.
+echo       PyMuPDF 2.0 needs Python 3.11 or newer, so that venv cannot
+echo       produce headings or tables. Setup will try to rebuild it now.
+echo.
+goto needsetup
+
+:needsetup
 echo.
 echo   First run: installing, this takes 2-4 minutes.
-echo   (only once - later runs start immediately)
+echo   Only once - later runs start immediately.
 echo.
 call "%~dp0_setup.bat"
 if errorlevel 1 goto setupfail
