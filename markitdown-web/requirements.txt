@@ -1,0 +1,5 @@
+# MarkItDown 網頁版 — 只裝需要的格式,避開 Azure SDK / 語音等重型依賴
+markitdown[pdf,docx,pptx,xlsx,xls,outlook]>=0.1.9
+fastapi>=0.115
+uvicorn[standard]>=0.32
+python-multipart>=0.0.12

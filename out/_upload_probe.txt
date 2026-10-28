@@ -1,1 +1,0 @@
-Google Drive upload capability probe - safe to delete.
