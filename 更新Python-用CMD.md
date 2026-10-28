@@ -214,6 +214,8 @@ curl -L -o "%TEMP%\py-setup.exe" https://www.python.org/ftp/python/3.12.10/pytho
 | 你見到 | 原因 | 點做 |
 |---|---|---|
 | `winget 不是內部或外部命令` | Windows 太舊 / 沒 App Installer | 用「方法 B」 |
+| `winget` 說「已安裝現有套件 / 找不到可用的升級」 | Python **已經裝了**,唔需要再裝 | 跑 `py -0p` 看實際路徑;已裝就跳到步驟 3 重建 `.venv` |
+| `py -0p` 見到 3.12,但轉出嚟仍然純文字 | `.venv` 仍是舊的,而舊 `PDF2MD.bat` 見到 `.deps-ok` 就跳過重建 | `rmdir /s /q .venv` 然後 `py -3.12 -m venv .venv`,或者用新版 ZIP |
 | `py -0` 裝完仍是只有 3.10 | CMD 沒重開 | 關掉全部 CMD 視窗,再開新的 |
 | `py -3.12` 說找不到 | PATH 沒更新 | 重開 CMD;仍不行就跑 `py -0p` 看實際路徑 |
 | 重建時 `Could not delete the old .venv` | 有視窗正在用它 | 關掉 `PDF2MD.bat` / `start.bat` 的黑窗,再試 |
