@@ -23,8 +23,11 @@ PDF ──(轉換器)──▶ knowledge/*.md ──(問答頁)──▶ Gemini 
 
 ## 快速開始
 
-**只想快點把 PDF 轉成 MD** → 看 **[`markitdown-web/本機使用指南.md`](markitdown-web/本機使用指南.md)**:
-裝 Python → 雙擊 `start.bat` → 把資料夾拖到 `convert.bat`。三個步驟,Vercel 完全不需要。
+**👉 只想快點把 PDF 轉成 MD** → 先睇 **[`開始用-睇我.md`](開始用-睇我.md)**
+(下載邊個 ZIP、解壓、雙擊邊個檔,一頁講完)
+
+其他細節才需要看 **[`markitdown-web/本機使用指南.md`](markitdown-web/本機使用指南.md)**。
+Vercel 完全不需要。
 
 **只是想問文件內容** → 開 `gemini/index.html`(需要 Gemini API key)。
 
