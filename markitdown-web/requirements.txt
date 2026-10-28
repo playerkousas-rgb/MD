@@ -1,13 +1,21 @@
-# MarkItDown 網頁版 — 只裝需要的格式,避開 Azure SDK / 語音等重型依賴
+# 轉換器依賴
+# 需要 Python 3.11+(PyMuPDF 2.0 的最低要求)。
+# Python 3.10 也能裝,但會退回 PyMuPDF 1.x → 沒有版面分析(標題／表格)。
+
 markitdown[pdf,docx,pptx,xlsx,xls,outlook]>=0.1.9
 fastapi>=0.115
 uvicorn[standard]>=0.32
 python-multipart>=0.0.12
 
-# ---- OCR 相關 ----
-# 不用系統 Tesseract(要 apt、要語言包、容器體積大),全程 pip 安裝
-pymupdf>=2.0                 # 2.0 內建 ONNX 版面模型:標題／清單／表格 → Markdown
-                             # 同時負責把頁面點陣化成 PNG 交給 OCR
-rapidocr-onnxruntime>=1.3    # PP-OCRv4 ONNX 模型,中英文,首次執行會下載 ~15MB 模型
-opencv-python-headless>=4.9  # rapidocr 依賴;必須用 headless,否則容器缺 libGL.so.1
-opencc-python-reimplemented>=0.1.7  # 簡體 → 香港繁體(s2hk),修正 OCR 簡繁混雜
+# ---- PDF:版面分析 + 點陣化 ----
+# 2.0 內建 ONNX 版面模型:標題、巢狀清單、表格 → 真正的 Markdown
+pymupdf>=2.0; python_version >= "3.11"
+pymupdf>=1.24; python_version < "3.11"
+
+# ---- OCR:全程 pip,不需系統 Tesseract ----
+rapidocr-onnxruntime>=1.3
+# 必須用 headless:非 headless 版在沒有 libGL.so.1 的環境(容器／伺服器)匯入即失敗。
+# ⚠ rapidocr 會自己拉 opencv-python(非 headless)並覆蓋這一份,
+#   所以 start.sh / start.bat 安裝完會再強制改回 headless。
+opencv-python-headless>=4.9
+opencc-python-reimplemented>=0.1.7

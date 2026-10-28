@@ -26,9 +26,13 @@
 
 ## 一、最快上手(本機執行)
 
+> **只想快點開始?** 看 [本機使用指南.md](本機使用指南.md) —— 三步、兩個雙擊。
+> 下面是最完整的說明。
+
 ### 1. 確認 Python 版本
 
-需要 **Python 3.10 或以上**:
+需要 **Python 3.11 或以上**(PyMuPDF 2.0 的要求;
+3.10 仍可執行,但沒有版面分析,輸出會退化成純文字):
 
 ```bash
 python --version        # Windows 也可能是 python3 或 py
@@ -68,6 +72,11 @@ OCR 的部分**全部用 pip 安裝,不需要系統 Tesseract**:
 | `opencc-python-reimplemented` | 簡體 → 繁體(`s2t`)|
 
 ### 3. 啟動
+
+最簡單:雙擊 `start.bat`(Windows)或 `./start.sh`(macOS / Linux),
+它會自動建立環境、安裝依賴(首次 2–4 分鐘)並開瀏覽器。
+
+手動方式:
 
 ```bash
 uvicorn app:app --host 0.0.0.0 --port 8000
@@ -430,6 +439,8 @@ markitdown-web/
 ├── batch_convert.py     # 資料夾批次轉換 CLI → .md + _index.json + _report.csv
 ├── static/
 │   └── index.html       # 轉換頁(拖放、OCR 模式、預覽、複製、下載)
+├── start.sh / start.bat     # 一鍵安裝 + 啟動
+├── convert.sh / convert.bat # 拖一個資料夾進來 → 批量轉換
 ├── requirements.txt
 ├── Dockerfile
 ├── docker-compose.yml
@@ -456,6 +467,9 @@ markitdown-web/
 | OCR 出來是簡體 | `opencc-python-reimplemented` 沒裝好;檢查 `_to_hant()` |
 | OCR 很慢 | 正常,3–4 秒 / 頁;降低 `OCR_DPI` 或改用 `ocr_mode=auto` |
 | 中文變亂碼 | 檔案本身可能是 Big5;下載時用 UTF-8 開 |
+| `ImportError: libGL.so.1` | rapidocr 把 headless 版 opencv 覆蓋了;`pip uninstall -y opencv-python` 後 `pip install --force-reinstall --no-deps opencv-python-headless` |
+| 輸出沒標題沒表格 | Python < 3.11 → PyMuPDF 只有 1.x;升級後刪 `.venv` 重裝 |
+| 進度／總結沒顯示 | 已修(mute stdout 的方式在 2.0 以前會弄壞 fd 1) |
 
 ---
 

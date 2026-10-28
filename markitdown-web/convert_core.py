@@ -464,38 +464,33 @@ def _clean_layout_md(text: str) -> str:
     return text.strip()
 
 
-class _mute_stdout:
-    """把 fd 1 靜音。
+_quiet_ready = False
+_quiet_lock = threading.Lock()
 
-    PyMuPDF 的版面分析會直接寫 fd 1(不是 sys.stdout),
-    所以 contextlib.redirect_stdout 攔不到,只能 dup 檔案描述符。
+
+def _quiet_pymupdf() -> None:
+    """把 PyMuPDF 的內部訊息導向黑洞(執行緒安全,只做一次)。
+
+    版面分析會印 "=== Document parser messages ===" 之類的噪音。
+    早前用 os.dup2 改 fd 1 來靜音,結果多執行緒時把 stdout 弄壞
+    (進度與總結全部消失),所以改用官方 set_messages。
     """
-
-    def __enter__(self):
-        import sys
-
-        self._saved_fd = None
+    global _quiet_ready
+    if _quiet_ready:
+        return
+    with _quiet_lock:
+        if _quiet_ready:
+            return
         try:
-            sys.stdout.flush()
-            self._saved_fd = os.dup(1)
-            self._devnull = os.open(os.devnull, os.O_WRONLY)
-            os.dup2(self._devnull, 1)
-        except OSError:
-            self._saved_fd = None
-        return self
+            import io
 
-    def __exit__(self, *exc):
-        import sys
+            import pymupdf
 
-        if self._saved_fd is not None:
-            try:
-                sys.stdout.flush()
-                os.dup2(self._saved_fd, 1)
-                os.close(self._saved_fd)
-                os.close(self._devnull)
-            except OSError:
-                pass
-        return False
+            if hasattr(pymupdf, "set_messages"):
+                pymupdf.set_messages(stream=io.StringIO())
+        except Exception:  # noqa: BLE001
+            pass
+        _quiet_ready = True
 
 
 def layout_available() -> bool:
@@ -513,10 +508,9 @@ def layout_available() -> bool:
 def _pdf_to_markdown_layout(path: str, ocr_mode: str, page_markers: bool,
                             glossary: dict | None):
     """文字頁走版面分析,掃描頁走 OCR,逐頁合併。"""
-    import contextlib
-    import io
-
     import pymupdf
+
+    _quiet_pymupdf()
 
     doc = pymupdf.open(path)
     page_count = doc.page_count
@@ -526,23 +520,20 @@ def _pdf_to_markdown_layout(path: str, ocr_mode: str, page_markers: bool,
     warnings_out: list[str] = []
 
     try:
-        # to_markdown 會把引擎訊息直接寫 fd 1,這裡吞掉以免污染伺服器日誌
-        io.StringIO()
-        with _mute_stdout():
-            try:
-                # use_ocr=0 關掉 PyMuPDF 內建的 OCR:
-                # 它會自己辨識掃描頁,但不標記哪頁、無信心度、也不做簡繁轉換,
-                # 交給下面的自訂 OCR 才有 <!-- p.N ocr --> 與詞彙表修正。
-                chunks = doc.to_markdown(page_chunks=True, use_ocr=0)
-            except TypeError:
-                chunks = doc.to_markdown(page_chunks=True)
-            except Exception as e:  # noqa: BLE001
-                warnings_out.append("版面分析失敗,改用純文字:%s: %s"
-                                    % (type(e).__name__, e))
-                doc.close()
-                return pdf_to_markdown(path, ocr_mode=ocr_mode,
-                                       page_markers=page_markers,
-                                       glossary=glossary, layout=False)
+        try:
+            # use_ocr=0 關掉 PyMuPDF 內建的 OCR:
+            # 它會自己辨識掃描頁,但不標記哪頁、無信心度、也不做簡繁轉換,
+            # 交給下面的自訂 OCR 才有 <!-- p.N ocr --> 與詞彙表修正。
+            chunks = doc.to_markdown(page_chunks=True, use_ocr=0)
+        except TypeError:
+            chunks = doc.to_markdown(page_chunks=True)
+        except Exception as e:  # noqa: BLE001
+            warnings_out.append("版面分析失敗,改用純文字:%s: %s"
+                                % (type(e).__name__, e))
+            doc.close()
+            return pdf_to_markdown(path, ocr_mode=ocr_mode,
+                                   page_markers=page_markers,
+                                   glossary=glossary, layout=False)
 
         by_page = {}
         for ch in chunks:
