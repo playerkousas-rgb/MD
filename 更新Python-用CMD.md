@@ -96,6 +96,57 @@ py -3.12 --version
 
 ---
 
+## ✅ 已實測成功的完整指令(2026-10-28,Windows,由 3.10 升到 3.12)
+
+以下六段在真實 Windows 機器上**逐條執行過並確認成功**,可以直接照抄。
+前提:`py -0p` 已經見到 3.12。
+
+```cmd
+rmdir /s /q .venv
+```
+```cmd
+py -3.12 -m venv .venv
+```
+```cmd
+".venv\Scripts\python.exe" -m pip install -r requirements.txt
+```
+```cmd
+".venv\Scripts\python.exe" -m pip uninstall -y opencv-python
+```
+```cmd
+".venv\Scripts\python.exe" -m pip install --force-reinstall --no-deps opencv-python-headless
+```
+```cmd
+".venv\Scripts\python.exe" -c "import sys,pymupdf;print(sys.version.split()[0],pymupdf.__version__,hasattr(pymupdf.open(),'to_markdown'))"
+```
+
+**必須見到(實測輸出):**
+
+```
+3.12.10 2.0 True
+```
+
+三個都要對:Python ≥3.11、pymupdf 2.0、`to_markdown` 為 `True`。
+最後補一行免得下次重裝:
+
+```cmd
+echo ok> .venv\.deps-ok
+```
+
+再檢查 OCR 沒被搞壞:
+
+```cmd
+".venv\Scripts\python.exe" -c "import cv2,rapidocr_onnxruntime;print('OCR O K')"
+```
+
+見到 `OCR O K` 就完成。之後雙擊 `PDF2MD.bat` 轉換,`.md` 檔頭應該是
+`pipeline: pymupdf-layout`(不是 `pymupdf-text`)。
+
+> 實測時第一至第五步全部回報 Successfully installed,
+> `pip` 另提示 25.0.1 → 26.2.2 可升級 —— **那個提示可以忽略**,不影響轉換。
+
+---
+
 ## 步驟 5 — 重建 `.venv`(讓轉換器改用 3.12)
 
 ### 方法 0(最簡單)— 雙擊 `修正Python環境.bat`
