@@ -219,7 +219,7 @@ SLS
 拯溺訓練班 
 Life Saving Course 
 SMA 
-地圖閲讀訓練班 
+地圖閱讀訓練班 
 Map Reading Course 
 SMM 
 音樂律動訓練班 

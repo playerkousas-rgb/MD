@@ -37,9 +37,6 @@ import convert_core as core
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 
-# 已轉換好的 Markdown 知識庫(batch_convert.py 的輸出)。
-# 前端示範頁(/kbview)靠它做全文檢索,再交給 Gemini 回答。
-KB_DIR = os.environ.get("KB_DIR", os.path.join(BASE_DIR, "..", "knowledge"))
 
 MAX_BYTES = int(os.environ.get("MAX_UPLOAD_MB", "100")) * 1024 * 1024
 MAX_FILES = 50
@@ -227,40 +224,12 @@ def convert_zip(
     )
 
 
-@app.get("/kb/status")
-def kb_status():
-    """知識庫是否存在、有幾份文件。"""
-    idx = os.path.join(KB_DIR, "_index.json")
-    if not os.path.isfile(idx):
-        return {"available": False, "dir": KB_DIR, "files": 0}
-    import json
-
-    with open(idx, encoding="utf-8") as f:
-        data = json.load(f)
-    return {
-        "available": True,
-        "dir": KB_DIR,
-        "files": data.get("total", len(data.get("files", []))),
-        "converted_at": data.get("generated_at"),
-    }
-
-
 @app.get("/")
 def index():
     return FileResponse(os.path.join(STATIC_DIR, "index.html"))
 
 
-@app.get("/kbview")
-def kb_view():
-    """示範前端:讀 knowledge/*.md → 交給 Gemini 回答。"""
-    return FileResponse(os.path.join(STATIC_DIR, "kb.html"))
-
-
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
-
-# 掛載知識庫(唯讀)。目錄不存在也不影響轉換功能。
-if os.path.isdir(KB_DIR):
-    app.mount("/kb", StaticFiles(directory=KB_DIR), name="kb")
 
 
 if __name__ == "__main__":  # pragma: no cover

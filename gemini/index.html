@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>童軍文件知識庫 · 問答示範</title>
+<title>童軍文件問答 · Gemini</title>
 <style>
   :root {
     --bg: #0b1220; --panel: #131c2e; --panel-2: #1a2438; --line: #263349;
@@ -77,8 +77,8 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>童軍文件知識庫</h1>
-    <p>由 MarkItDown + OCR 轉出的官方文件 Markdown,交給 Gemini 回答問題。答案會標出來源檔案。</p>
+    <h1>童軍文件問答</h1>
+    <p>讀取已轉換好的 Markdown 文件,交給 Gemini 回答問題,並標出來源檔案。</p>
   </header>
 
   <div class="grid">
@@ -124,7 +124,8 @@
       </div>
 
       <div class="note" id="note">
-        按「問 Gemini」才會把<b>命中的幾份文件</b>送去 Google;其餘時間文件不會離開這台伺服器。
+        這一頁只讀 Markdown(<code>.md</code>),不做任何轉換或 OCR ——
+        轉檔是另一支工具的事。按「問 Gemini」才會把<b>命中的幾份文件</b>送去 Google。
         沒有 API key 也可以按左邊的文件直接預覽內容。
       </div>
     </div>
@@ -133,7 +134,14 @@
 
 <script>
 const $ = (s) => document.querySelector(s);
-const KB = "/kb";                     // 由 app.py 掛載的知識庫目錄
+/* 知識庫位置:
+     - 放在同一個 repo 的 knowledge/  → 預設 "../knowledge"
+     - 部署時把 knowledge/ 放在旁邊     → "./knowledge"
+     - 直接讀 GitHub raw              → "?kb=https://raw.githubusercontent.com/<user>/<repo>/<branch>/knowledge"
+*/
+const KB = (new URLSearchParams(location.search).get("kb")
+        || (location.pathname.includes("/gemini/") ? "../knowledge" : "./knowledge"))
+        .replace(/\/+$/, "");
 let index = null;
 const cache = new Map();              // md_file -> 全文
 
@@ -152,7 +160,7 @@ const cache = new Map();              // md_file -> 全文
     $("#count").textContent = "";
     $("#note").innerHTML =
       `讀不到 <code>${KB}/_index.json</code>(${e.message})。<br>` +
-      `請先執行 <code>python batch_convert.py ../out/dl -o ../knowledge</code>,並確認 app.py 有掛載 /kb。`;
+      `確認 <code>knowledge/_index.json</code> 與這頁在同一個站上,或用 <code>?kb=&lt;網址&gt;</code> 指定位置。`;
   }
 })();
 

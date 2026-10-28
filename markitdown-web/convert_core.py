@@ -9,8 +9,9 @@ PDF 走「逐頁判斷」路線:
 兩種情況可以在同一份 PDF 內混用,這對「部分頁面是掃描件」的公文很常見。
 
 OCR 用 RapidOCR(PP-OCR,ONNX Runtime),純 pip、不需系統 Tesseract。
-PP-OCR 的中文模型輸出偏向簡體,所以預設用 OpenCC `s2hk`
-(簡體 → 香港繁體)校正 —— 注意不能用 `s2twp`,它會把「程序」改成「程式」。
+PP-OCR 的中文模型輸出偏向簡體,所以用 OpenCC `s2t` 轉成繁體
+(標準繁體)校正 —— 不能用 `s2hk`(會把「閱/說」改成異體「閲/説」),
+也不能用 `s2twp`(會把「程序」換成臺灣的「程式」)。
 """
 
 from __future__ import annotations
@@ -63,7 +64,14 @@ _opencc_lock = threading.Lock()
 
 
 def _to_hant(text: str) -> str:
-    """簡體 → 香港繁體。OpenCC 不可用時原樣返回(不影響主流程)。"""
+    """簡體 → 繁體。OpenCC 不可用時原樣返回(不影響主流程)。
+
+    用 `s2t`(標準繁體)而不是 `s2hk`:
+      * s2hk 會把原本正確的「閱/說」改寫成香港異體「閲/説」,
+        實測整份知識庫會被改掉 212 處,與官方文件用字不符。
+      * s2twp 會換成臺灣詞彙(程序→程式),更不對。
+      * s2t 只做字形轉換,對已是繁體的文字完全無改動。
+    """
     global _opencc, _opencc_failed
     if not text or _opencc_failed:
         return text
@@ -72,7 +80,7 @@ def _to_hant(text: str) -> str:
             try:
                 from opencc import OpenCC
 
-                _opencc = OpenCC("s2hk")
+                _opencc = OpenCC(os.environ.get("OPENCC_CONFIG", "s2t"))
             except Exception:
                 _opencc_failed = True
                 return text
@@ -129,6 +137,129 @@ def _get_ocr():
 
 
 _CJK = re.compile(r"[\u3400-\u9fff\uf900-\ufaff]")
+
+
+# ---------------------------------------------------------------- PDF 引擎
+# 本機版用 PyMuPDF(功能最全);Vercel 版不裝 PyMuPDF(116MB),
+# 自動退回 pypdfium2(約 8MB)。邏輯其餘部分兩邊完全一樣。
+
+_PDF_ENGINE = None   # None=未決定 / "pymupdf" / "pdfium" / False=都沒有
+
+
+def pdf_engine() -> str | None:
+    """回傳目前使用的 PDF 引擎名稱;兩個都沒裝時回傳 None。"""
+    global _PDF_ENGINE
+    if _PDF_ENGINE is None:
+        want = os.environ.get("PDF_ENGINE", "").strip().lower()
+        if want in ("pymupdf", "fitz"):
+            try:
+                import pymupdf  # noqa: F401
+                _PDF_ENGINE = "pymupdf"
+            except ImportError:
+                _PDF_ENGINE = False
+        elif want == "pdfium":
+            try:
+                import pypdfium2  # noqa: F401
+                _PDF_ENGINE = "pdfium"
+            except ImportError:
+                _PDF_ENGINE = False
+        else:
+            try:
+                import pymupdf  # noqa: F401
+                _PDF_ENGINE = "pymupdf"
+            except ImportError:
+                try:
+                    import pypdfium2  # noqa: F401
+                    _PDF_ENGINE = "pdfium"
+                except ImportError:
+                    _PDF_ENGINE = False
+    return _PDF_ENGINE or None
+
+
+class _PdfDoc:
+    """把 PyMuPDF 與 pypdfium2 的 API 差異收在一層。"""
+
+    def __init__(self, path: str):
+        eng = pdf_engine()
+        if eng == "pymupdf":
+            import pymupdf
+            self._doc = pymupdf.open(path)
+            self.page_count = self._doc.page_count
+        elif eng == "pdfium":
+            import pypdfium2
+            self._doc = pypdfium2.PdfDocument(path)
+            self.page_count = len(self._doc)
+        else:
+            raise RuntimeError("沒有可用的 PDF 引擎(需要 pymupdf 或 pypdfium2)")
+
+    def __iter__(self):
+        if pdf_engine() == "pymupdf":
+            for page in self._doc:
+                yield page
+        else:
+            for page in self._doc:
+                yield page
+                try:
+                    page.close()
+                except Exception:
+                    pass
+
+    def close(self):
+        try:
+            self._doc.close()
+        except Exception:
+            pass
+
+
+def page_text(page) -> str:
+    """抽一頁的文字層。"""
+    try:
+        if pdf_engine() == "pymupdf":
+            return page.get_text("text") or ""
+        tp = page.get_textpage()
+        try:
+            return tp.get_text_range() or ""
+        finally:
+            tp.close()
+    except Exception:
+        return ""
+
+
+def page_png(page, dpi: int) -> bytes:
+    """把一頁點陣化成 PNG bytes,交給 OCR。"""
+    import io
+
+    if pdf_engine() == "pymupdf":
+        return page.get_pixmap(dpi=dpi).tobytes("png")
+
+    from PIL import Image
+
+    bitmap = page.render(scale=dpi / 72.0)
+    try:
+        img = bitmap.to_pil()
+    finally:
+        try:
+            bitmap.close()
+        except Exception:
+            pass
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return buf.getvalue()
+
+
+def image_png(path: str) -> bytes:
+    """把圖片檔轉成 PNG bytes。"""
+    import io
+
+    if pdf_engine() == "pymupdf":
+        import pymupdf
+        return pymupdf.Pixmap(path).tobytes("png")
+
+    from PIL import Image
+
+    buf = io.BytesIO()
+    Image.open(path).convert("RGB").save(buf, format="PNG")
+    return buf.getvalue()
 
 
 def _is_cjk(ch: str) -> bool:
@@ -296,10 +427,9 @@ def _lines_to_text(lines: list[tuple[float, float, float, float, str]]) -> str:
     return "\n\n".join(out_blocks)
 
 
-def ocr_page_image(pix) -> tuple[str, float]:
-    """對一個 PyMuPDF Pixmap 做 OCR,回傳 (文字, 平均信心)。"""
+def ocr_page_image(png: bytes) -> tuple[str, float]:
+    """對一張 PNG(頁面點陣圖)做 OCR,回傳 (文字, 平均信心)。"""
     engine = _get_ocr()
-    png = pix.tobytes("png")
     with _ocr_lock:  # onnxruntime session 連續推論較安全
         result, _elapse = engine(png)
     if not result:
@@ -322,12 +452,10 @@ def ocr_page_image(pix) -> tuple[str, float]:
 def pdf_to_markdown(path: str, ocr_mode: str = "auto", page_markers: bool = True,
                     glossary: dict | None = None):
     """回傳 (markdown, meta)。逐頁決定要不要 OCR。"""
-    import pymupdf
-
     if ocr_mode not in OCR_MODES:
         ocr_mode = "auto"
 
-    doc = pymupdf.open(path)
+    doc = _PdfDoc(path)
     page_count = doc.page_count
     pages_out: list[str] = []
     pages_ocr = 0
@@ -339,10 +467,7 @@ def pdf_to_markdown(path: str, ocr_mode: str = "auto", page_markers: bool = True
         for i, page in enumerate(doc, start=1):
             text = ""
             if ocr_mode != "always":
-                try:
-                    text = page.get_text("text") or ""
-                except Exception:
-                    text = ""
+                text = page_text(page)
 
             need_ocr = ocr_mode == "always" or (
                 ocr_mode == "auto" and len(text.strip()) < MIN_CHARS_PER_PAGE
@@ -351,8 +476,7 @@ def pdf_to_markdown(path: str, ocr_mode: str = "auto", page_markers: bool = True
             used_ocr = False
             if need_ocr:
                 try:
-                    pix = page.get_pixmap(dpi=OCR_DPI)
-                    ocr_text, score = ocr_page_image(pix)
+                    ocr_text, score = ocr_page_image(page_png(page, OCR_DPI))
                 except Exception as e:  # noqa: BLE001
                     ocr_text, score = "", 0.0
                     warnings_out.append("第 %d 頁 OCR 失敗:%s: %s" % (i, type(e).__name__, e))
@@ -408,10 +532,7 @@ IMAGE_EXT = {".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".webp"}
 
 
 def image_to_markdown(path: str, glossary: dict | None = None):
-    import pymupdf
-
-    pix = pymupdf.Pixmap(path)
-    text, score = ocr_page_image(pix)
+    text, score = ocr_page_image(image_png(path))
     text = apply_glossary(_to_hant(text), glossary)
     meta = {"pages": 1, "pages_ocr": 1 if text else 0,
             "ocr_avg_score": round(score, 3) if score else None,

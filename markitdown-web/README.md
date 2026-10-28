@@ -12,6 +12,16 @@
 本專案的用途是**把 PDF 轉成 Markdown 存進這個 repo**,再由前端網頁讀取,
 交給 Gemini 回答使用者問題。因此:**刻意不設登入驗證**。
 
+> **repo 內有三件東西,各自負責一件事**
+>
+> | 目錄 | 是甚麼 | 跑在哪 |
+> |---|---|---|
+> | `markitdown-web/`(本目錄)| 轉換器:網頁 + 批次 CLI,**無大小限制** | 自己電腦 / 內網 |
+> | `pdf2md/` | 同一個轉換器的 **Vercel 版**(單檔 ≤4MB)| Vercel |
+> | `gemini/` | 問答頁:只讀 `.md`,接 Gemini | 靜態網站 |
+>
+> 轉換器只輸出 `.md`;問答頁只讀 `.md`。兩邊不互相依賴。
+
 ---
 
 ## 一、最快上手(本機執行)
@@ -55,7 +65,7 @@ OCR 的部分**全部用 pip 安裝,不需要系統 Tesseract**:
 | `pymupdf` | 把 PDF 頁面點陣化成 PNG,交給 OCR |
 | `rapidocr-onnxruntime` | PP-OCRv4 中英文模型(約 15MB,隨 wheel 附帶,不用另外下載)|
 | `opencv-python-headless` | rapidocr 依賴;**必須**用 headless 版,否則缺 `libGL.so.1` |
-| `opencc-python-reimplemented` | 簡體 → 香港繁體(`s2hk`)|
+| `opencc-python-reimplemented` | 簡體 → 繁體(`s2t`)|
 
 ### 3. 啟動
 
@@ -135,7 +145,7 @@ HKG-1234 | 陳大文 | 24
 
 - 每頁開頭有 `<!-- p.1 -->` 頁碼註記,**經 OCR 的頁面會標成 `<!-- p.1 ocr -->`**,
   方便你(和 Gemini)知道哪些內容可能有錯字。
-- OCR 出來的字會過一次 `OpenCC('s2hk')`,把 PP-OCR 的簡體輸出轉成香港繁體
+- OCR 出來的字會過一次 `OpenCC('s2t')`,把 PP-OCR 的簡體輸出轉成標準繁體
   (`查询→查詢`、`编號→編號`),不會出現臺灣用語(`程序` 不會變 `程式`)。
 - 常見誤認會由詞彙表修正(`負袖→負責`、`童军→童軍`、`網要→綱要`),
   詞彙表在 `convert_core.py` 的 `DEFAULT_GLOSSARY`,可自行增修。
@@ -255,27 +265,10 @@ ${docs.join("\n\n---\n\n")}
 > 有用 `pages_ocr > 0` 的文件要提醒模型:OCR 可能有錯字,
 > 涉及日期、金額、通告編號時要說明「請以原文為準」。
 
-### 附帶的示範問答頁:`/kbview`
+### 問答頁是另一個專案
 
-不想自己寫前端的話,`app.py` 已經把 `knowledge/` 掛在 `/kb`,
-並附一頁示範前端 **<http://localhost:8000/kbview>**:
-
-- 左邊列出 79 份文件,可搜尋、可直接預覽原文
-- 右邊輸入問題 → 先在本機用 **IDF 加權關鍵字檢索**挑出最相關的 2–6 份
-  → 只把這幾份的內容送去 Gemini → 答案會標出來源檔案
-- Gemini API key 只存在瀏覽器 `localStorage`,不會送到本服務
-- 沒有 key 也可以只做檢索,或純瀏覽文件
-
-實測檢索效果(問題 → 第一名):
-
-| 問題 | 命中 |
-|---|---|
-| 探索課程申請表要幾時交 | `03_政策及安全指引/P110-26.md` ✓ |
-| 會員證報失點算 | `07_地域及屬會專用/02.md` ✓(OCR 檔)|
-
-`/kb` 是唯讀掛載;知識庫目錄可用環境變數 `KB_DIR` 指向別處。
-目錄不存在時只是不掛載,不影響轉換功能。
-
+Gemini 問答頁只讀 Markdown,不做任何轉換或 OCR,已獨立成 repo 內的 `gemini/`。
+本目錄(`markitdown-web/`)只負責轉換。詳見 `gemini/README.md`。
 ---
 
 ## 五、API 一覽
@@ -411,8 +404,7 @@ markitdown-web/
 ├── app.py               # FastAPI 後端(上載、批次、ZIP 匯出)
 ├── batch_convert.py     # 資料夾批次轉換 CLI → .md + _index.json + _report.csv
 ├── static/
-│   ├── index.html       # 轉換頁(拖放、OCR 模式、預覽、複製、下載)
-│   └── kb.html          # 示範問答頁(/kbview):檢索 knowledge/ → Gemini
+│   └── index.html       # 轉換頁(拖放、OCR 模式、預覽、複製、下載)
 ├── requirements.txt
 ├── Dockerfile
 ├── docker-compose.yml
