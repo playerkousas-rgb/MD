@@ -5,7 +5,8 @@
 #  Windows PowerShell 5.1 才會正確顯示中文)。
 # ===========================================================
 param(
-    [string]$Target = ""
+    [string]$Target = "",
+    [switch]$Force
 )
 
 $ErrorActionPreference = "Continue"
@@ -122,7 +123,12 @@ try {
     $ErrorActionPreference = "Continue"
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
 
-    & ".\.venv\Scripts\python.exe" "batch_convert.py" "$Work" -o "$Out" --ocr auto --workers 2
+    $extra = @()
+    if ($Force) {
+        Say "  模式: 強制重新轉換(覆蓋既有 .md)" "Yellow"
+        $extra += "--force"
+    }
+    & ".\.venv\Scripts\python.exe" "batch_convert.py" "$Work" -o "$Out" --ocr auto --workers 2 @extra
     $code = $LASTEXITCODE
 
     $sw.Stop()

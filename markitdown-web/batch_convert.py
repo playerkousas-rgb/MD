@@ -68,6 +68,28 @@ def _looks_complete(path: str) -> bool:
         return False
 
 
+def _existing_info(path: str) -> dict:
+    """讀既有 .md 的檔頭,判斷它當初是用排版分析還是純文字產生的。
+
+    續跑時這些檔案會被「跳過」,如果只回報 layout=None,總結就會誤報
+    「全部都沒有版面分析」。如實讀回來才不會嚇人。
+    """
+    info = {"layout": None, "pipeline": None, "chars": 0}
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = f.read()
+    except (OSError, UnicodeDecodeError):
+        return info
+    info["chars"] = len(data)
+    head = data[:600]
+    for line in head.splitlines():
+        if line.startswith("pipeline:"):
+            info["pipeline"] = line.split(":", 1)[1].strip()
+            info["layout"] = info["pipeline"] == "pymupdf-layout"
+            break
+    return info
+
+
 def collect(src: str, exts: set[str]) -> list[str]:
     found = []
     for root, _dirs, names in os.walk(src):
@@ -105,10 +127,16 @@ def convert_one(src_path: str, src_root: str, out_root: str, args) -> dict:
 
     if os.path.exists(out_path) and not args.force:
         if _looks_complete(out_path):
+            prev = _existing_info(out_path)
             rec["ok"] = True
             rec["skipped"] = True
-            rec["chars"] = os.path.getsize(out_path)
+            rec["chars"] = prev["chars"] or os.path.getsize(out_path)
+            rec["layout"] = prev["layout"]
             rec["seconds"] = 0.0
+            if prev["layout"] is False:
+                rec["warnings"].append(
+                    "既有輸出來自純文字模式(沒有標題／表格),本次未重做;"
+                    "要重做請加 --force")
             return rec
         # 半截／損壞的輸出 → 重做,不要靜靜跳過
         rec["warnings"].append("既有輸出不完整,已重新轉換")
@@ -301,12 +329,21 @@ def main() -> int:
     print("\n" + "=" * 66)
     print("完成:%d 個 | 跳過(已存在):%d | 失敗:%d | 耗時 %.1fs"
           % (len(ok), len(skipped), len(failed), elapsed))
-    got_layout = sum(1 for r in results if r.get("layout"))
-    if got_layout:
-        print("有版面分析(標題／表格):%d / %d 個" % (got_layout, len(results)))
-    elif results:
-        print("!! 全部 %d 個都沒有版面分析,輸出只有純文字 —— 原因見上面「環境」一節。"
-              % len(results))
+    fresh = [r for r in results if r["ok"] and not r["skipped"]]
+    fresh_layout = sum(1 for r in fresh if r.get("layout"))
+    if fresh:
+        print("有版面分析(標題／表格):%d / %d 個" % (fresh_layout, len(fresh)))
+        if fresh_layout < len(fresh):
+            print("!! 其中 %d 個沒有版面分析,輸出只有純文字 —— 原因見上面「環境」一節。"
+                  % (len(fresh) - fresh_layout))
+    if skipped:
+        known = [r for r in skipped if r.get("layout") is not None]
+        if known:
+            sl = sum(1 for r in known if r["layout"])
+            print("跳過(已存在)的 %d 個檔案中,有版面分析的 %d 個,純文字的 %d 個。"
+                  % (len(known), sl, len(known) - sl))
+            if sl < len(known):
+                print("!! 那些純文字的舊檔不會自動更新;要重做請刪除輸出資料夾或加 --force。")
     if ocr_files:
         print("經 OCR 的檔案 %d 個(這些建議人工抽查):" % len(ocr_files))
         for r in ocr_files[:15]:
