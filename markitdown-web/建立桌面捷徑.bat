@@ -1,20 +1,27 @@
 @echo off
-chcp 65001 >nul
-REM 在桌面建立「PDF轉Markdown」捷徑(只需執行一次)
+REM  Create a desktop shortcut to PDF2MD.bat  (pure ASCII, label style)
 setlocal
 cd /d "%~dp0"
 
+if exist "%~dp0PDF2MD.bat" goto ok
+echo   [X] PDF2MD.bat not found in this folder.
+goto end
+
+:ok
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-  "$desk=[Environment]::GetFolderPath('Desktop');" ^
-  "$lnk=Join-Path $desk 'PDF轉Markdown.lnk';" ^
-  "$s=(New-Object -ComObject WScript.Shell).CreateShortcut($lnk);" ^
-  "$s.TargetPath='%~dp0轉換PDF.bat';" ^
+  "$d=[Environment]::GetFolderPath('Desktop');" ^
+  "$l=Join-Path $d 'PDF to Markdown.lnk';" ^
+  "$s=(New-Object -ComObject WScript.Shell).CreateShortcut($l);" ^
+  "$s.TargetPath='%~dp0PDF2MD.bat';" ^
   "$s.WorkingDirectory='%~dp0';" ^
   "$s.IconLocation='%SystemRoot%\System32\shell32.dll,70';" ^
-  "$s.Description='把 PDF 轉成 Markdown(含 OCR)';" ^
+  "$s.Description='PDF to Markdown with OCR';" ^
   "$s.Save();" ^
-  "Write-Host '';Write-Host ('✓ 已在桌面建立捷徑: ' + $lnk) -ForegroundColor Green;" ^
-  "Write-Host '  之後直接雙擊桌面那個圖示就可以,不用再開這個資料夾。' -ForegroundColor Gray"
-
+  "Write-Host ''; Write-Host ('  [OK] Shortcut created:'); Write-Host ('       ' + $l); Write-Host '  Double click that icon from now on.'"
 echo.
-pause
+echo   Done.
+
+:end
+echo.
+echo   Press any key to close this window.
+pause >nul

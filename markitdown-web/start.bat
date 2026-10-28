@@ -1,26 +1,29 @@
 @echo off
-chcp 65001 >nul
-REM 一鍵啟動(Windows)
-REM   雙擊即可。第一次會自動建立虛擬環境並安裝依賴(約 2-4 分鐘),之後只會啟動。
+REM  Start the web UI at http://localhost:8000  (pure ASCII, label style)
 setlocal
 cd /d "%~dp0"
 
-if "%PORT%"=="" set PORT=8000
-set READY=.venv\.deps-ok
+if not "%PORT%"=="" goto haveport
+set "PORT=8000"
+:haveport
 
-REM ---------- 1+2. 檢查環境並安裝(共用 _setup.bat) ----------
 call "%~dp0_setup.bat"
-if errorlevel 1 (
-  echo.
-  echo [X] 安裝未完成,請看上面的訊息。
-  pause
-  exit /b 1
-)
+if errorlevel 1 goto setupfail
 
-REM ---------- 3. 啟動 ----------
-echo [3/3] 啟動轉換器: http://localhost:%PORT%
-echo        ^(關閉此視窗即停止服務^)
+echo.
+echo   Starting web UI at http://localhost:%PORT%
+echo   Close this window to stop the server.
+echo.
 start "" "http://localhost:%PORT%"
-.\.venv\Scripts\python.exe -m uvicorn app:app --host 0.0.0.0 --port %PORT%
+".venv\Scripts\python.exe" -m uvicorn app:app --host 0.0.0.0 --port %PORT%
+goto end
 
-pause
+:setupfail
+echo.
+echo   [X] Installation did not finish.
+
+:end
+echo.
+echo   Press any key to close this window.
+pause >nul
+exit /b 0

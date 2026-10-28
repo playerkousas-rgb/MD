@@ -1,59 +1,58 @@
 @echo off
-chcp 65001 >nul
-REM 批量把一個資料夾(含子資料夾)的 PDF 轉成 Markdown
-REM
-REM 用法(兩種都可以):
-REM   1. 把資料夾直接拖到這個 .bat 檔案上
-REM   2. 雙擊,然後貼上資料夾路徑
-setlocal enabledelayedexpansion
+REM ===========================================================
+REM  Batch convert a folder and keep this window open for logs.
+REM  Drag a folder onto this file, or double click and paste a path.
+REM  Pure ASCII, label style (see note in PDF2MD.bat).
+REM ===========================================================
+setlocal
 cd /d "%~dp0"
 
-if not exist ".venv\Scripts\python.exe" (
-  echo.
-  echo [X] 尚未安裝。請先雙擊 start.bat 完成一次安裝。
-  echo.
-  pause
-  exit /b 1
-)
-if not exist ".venv\.deps-ok" (
-  echo.
-  echo [X] 依賴未安裝完成。請先雙擊 start.bat。
-  echo.
-  pause
-  exit /b 1
-)
+if exist ".venv\.deps-ok" goto ready
+echo   First run: installing, this takes 2-4 minutes.
+call "%~dp0_setup.bat"
+if errorlevel 1 goto setupfail
 
+:ready
 set "SRC=%~1"
-if "%SRC%"=="" (
-  echo.
-  echo 請把要轉換的資料夾拖進來,或貼上路徑後按 Enter:
-  set /p SRC=^> 
-)
-if "%SRC%"=="" (
-  echo 沒有輸入路徑。
-  pause
-  exit /b 1
-)
-if not exist "%SRC%\" (
-  echo.
-  echo [X] 找不到資料夾: %SRC%
-  pause
-  exit /b 1
-)
+if not "%SRC%"=="" goto got
 
-REM 去掉結尾的反斜線
+echo.
+echo   Drag a folder onto this window, or paste its path.
+set "SRC="
+set /p "SRC=> "
+
+:got
+if "%SRC%"=="" goto nosrc
+if not exist "%SRC%\" goto nofolder
 if "%SRC:~-1%"=="\" set "SRC=%SRC:~0,-1%"
-
-REM 輸出路徑 = 來源資料夾旁邊的「<資料夾名>-md」
-for %%I in ("%SRC%") do set "NAME=%%~nxI"
 set "OUT=%SRC%-md"
 
 echo.
-echo 來源: %SRC%
-echo 輸出: %OUT%
+echo   Source: %SRC%
+echo   Output: %OUT%
 echo.
-.\.venv\Scripts\python.exe batch_convert.py "%SRC%" -o "%OUT%" --ocr auto --workers 2
+".venv\Scripts\python.exe" "batch_convert.py" "%SRC%" -o "%OUT%" --ocr auto --workers 2
 echo.
-echo 完成。檔案在: %OUT%
+echo   Done. Files are in: %OUT%
+goto end
+
+:setupfail
 echo.
-pause
+echo   [X] Installation failed.
+goto end
+
+:nosrc
+echo.
+echo   Nothing entered.
+goto end
+
+:nofolder
+echo.
+echo   [X] Folder not found: %SRC%
+goto end
+
+:end
+echo.
+echo   Press any key to close this window.
+pause >nul
+exit /b
