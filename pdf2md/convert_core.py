@@ -449,14 +449,185 @@ def ocr_page_image(png: bytes) -> tuple[str, float]:
     return _lines_to_text(boxes), (sum(scores) / len(scores) if scores else 0.0)
 
 
+# ---------------------------------------------------------------- 版面分析
+# PyMuPDF 2.0 內建 ONNX 版面模型 + 表格偵測,可直接輸出結構化 Markdown
+# (標題、巢狀清單、表格)。純文字抽取做不到這些,所以能用就用。
+
+_MD_TAG_RE = re.compile(r"</?(?:u|mark|span|sup|sub|font)\b[^>]*>", re.I)
+
+
+def _clean_layout_md(text: str) -> str:
+    """去掉 to_markdown() 帶進來的 HTML 標記。
+
+    文件本身的螢光筆／底線註記會變成 <mark> / <u>,對餵 LLM 是噪音。
+    """
+    text = _MD_TAG_RE.sub("", text)
+    # 表格前後多餘空行收一收
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()
+
+
+class _mute_stdout:
+    """把 fd 1 靜音。
+
+    PyMuPDF 的版面分析會直接寫 fd 1(不是 sys.stdout),
+    所以 contextlib.redirect_stdout 攔不到,只能 dup 檔案描述符。
+    """
+
+    def __enter__(self):
+        import sys
+
+        self._saved_fd = None
+        try:
+            sys.stdout.flush()
+            self._saved_fd = os.dup(1)
+            self._devnull = os.open(os.devnull, os.O_WRONLY)
+            os.dup2(self._devnull, 1)
+        except OSError:
+            self._saved_fd = None
+        return self
+
+    def __exit__(self, *exc):
+        import sys
+
+        if self._saved_fd is not None:
+            try:
+                sys.stdout.flush()
+                os.dup2(self._saved_fd, 1)
+                os.close(self._saved_fd)
+                os.close(self._devnull)
+            except OSError:
+                pass
+        return False
+
+
+def layout_available() -> bool:
+    """版面分析是否可用(需要 PyMuPDF 2.0+)。"""
+    if pdf_engine() != "pymupdf":
+        return False
+    try:
+        import pymupdf
+
+        return hasattr(pymupdf.open(), "to_markdown")
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def _pdf_to_markdown_layout(path: str, ocr_mode: str, page_markers: bool,
+                            glossary: dict | None):
+    """文字頁走版面分析,掃描頁走 OCR,逐頁合併。"""
+    import contextlib
+    import io
+
+    import pymupdf
+
+    doc = pymupdf.open(path)
+    page_count = doc.page_count
+    pages_out: list[str] = []
+    pages_ocr = 0
+    scores: list[float] = []
+    warnings_out: list[str] = []
+
+    try:
+        # to_markdown 會把引擎訊息直接寫 fd 1,這裡吞掉以免污染伺服器日誌
+        io.StringIO()
+        with _mute_stdout():
+            try:
+                # use_ocr=0 關掉 PyMuPDF 內建的 OCR:
+                # 它會自己辨識掃描頁,但不標記哪頁、無信心度、也不做簡繁轉換,
+                # 交給下面的自訂 OCR 才有 <!-- p.N ocr --> 與詞彙表修正。
+                chunks = doc.to_markdown(page_chunks=True, use_ocr=0)
+            except TypeError:
+                chunks = doc.to_markdown(page_chunks=True)
+            except Exception as e:  # noqa: BLE001
+                warnings_out.append("版面分析失敗,改用純文字:%s: %s"
+                                    % (type(e).__name__, e))
+                doc.close()
+                return pdf_to_markdown(path, ocr_mode=ocr_mode,
+                                       page_markers=page_markers,
+                                       glossary=glossary, layout=False)
+
+        by_page = {}
+        for ch in chunks:
+            num = (ch.get("metadata") or {}).get("page_number")
+            if num:
+                by_page[int(num)] = ch.get("text") or ""
+
+        for i, page in enumerate(doc, start=1):
+            body = _clean_layout_md(by_page.get(i, ""))
+            text_layer = page_text(page) if ocr_mode != "always" else ""
+
+            need_ocr = ocr_mode == "always" or (
+                ocr_mode == "auto"
+                and (len(text_layer.strip()) < MIN_CHARS_PER_PAGE
+                     or len(body.strip()) < MIN_CHARS_PER_PAGE)
+            )
+
+            used_ocr = False
+            if need_ocr:
+                try:
+                    ocr_text, score = ocr_page_image(page_png(page, OCR_DPI))
+                except Exception as e:  # noqa: BLE001
+                    ocr_text, score = "", 0.0
+                    warnings_out.append("第 %d 頁 OCR 失敗:%s: %s"
+                                        % (i, type(e).__name__, e))
+                if ocr_text.strip():
+                    ocr_text = apply_glossary(_to_hant(ocr_text), glossary)
+                    # 版面分析有內容 → 保留它,再把 OCR 結果接在後面(避免漏字)
+                    body = (body + "\n\n" + ocr_text) if body.strip() else ocr_text
+                    pages_ocr += 1
+                    used_ocr = True
+                    scores.append(score)
+                elif len(body.strip()) < MIN_CHARS_PER_PAGE:
+                    warnings_out.append(
+                        "第 %d 頁沒有文字層,OCR 也認不到內容"
+                        "(可能是純圖片、空白頁或解析度太低)。" % i)
+
+            if body.strip() and not used_ocr:
+                body = apply_glossary(_to_hant(body), glossary)
+            if page_markers:
+                head = ("<!-- p.%d ocr -->\n" % i) if used_ocr else ("<!-- p.%d -->\n" % i)
+            else:
+                head = ""
+            pages_out.append(head + body if body.strip() else head + "_(本頁沒有可抽取的文字)_")
+    finally:
+        doc.close()
+
+    md = "\n\n".join(pages_out).strip()
+    meta = {
+        "pages": page_count,
+        "pages_ocr": pages_ocr,
+        "ocr_avg_score": round(sum(scores) / len(scores), 3) if scores else None,
+        "warnings": warnings_out,
+        "layout": True,
+    }
+    if pages_ocr:
+        meta["warnings"].append(
+            "本檔有 %d 頁經 OCR 辨識;OCR 會有錯字(尤其繁體),重要內容請人工核對。"
+            % pages_ocr
+        )
+    return md, meta
+
+
 # ---------------------------------------------------------------- PDF 轉換
 
 
 def pdf_to_markdown(path: str, ocr_mode: str = "auto", page_markers: bool = True,
-                    glossary: dict | None = None):
-    """回傳 (markdown, meta)。逐頁決定要不要 OCR。"""
+                    glossary: dict | None = None, layout: bool | None = None):
+    """回傳 (markdown, meta)。逐頁決定要不要 OCR。
+
+    layout=True  → 先用 PyMuPDF 版面分析(標題／清單／表格),掃描頁再補 OCR
+    layout=False → 純文字抽取(快,但沒有結構)
+    layout=None  → 由環境變數 PDF_LAYOUT 決定,預設 auto(能用就用)
+    """
     if ocr_mode not in OCR_MODES:
         ocr_mode = "auto"
+
+    if layout is None:
+        want = os.environ.get("PDF_LAYOUT", "auto").strip().lower()
+        layout = want in ("auto", "1", "true", "yes") and layout_available()
+    if layout and layout_available():
+        return _pdf_to_markdown_layout(path, ocr_mode, page_markers, glossary)
 
     doc = _PdfDoc(path)
     page_count = doc.page_count
@@ -512,6 +683,7 @@ def pdf_to_markdown(path: str, ocr_mode: str = "auto", page_markers: bool = True
         "pages_ocr": pages_ocr,
         "ocr_avg_score": round(sum(scores) / len(scores), 3) if scores else None,
         "warnings": warnings_out,
+        "layout": False,
     }
     if pages_ocr:
         meta["warnings"].append(
@@ -556,13 +728,14 @@ SUPPORTED_EXT = TEXT_EXT | IMAGE_EXT
 
 
 def convert_path(path: str, filename: str, ocr_mode: str = "auto",
-                 page_markers: bool = True, glossary: dict | None = None):
+                 page_markers: bool = True, glossary: dict | None = None,
+                 layout: bool | None = None):
     """依副檔名選路線,回傳 (markdown, meta)。不拋例外以外的東西都由呼叫方處理。"""
     ext = os.path.splitext(filename)[1].lower()
 
     if ext == ".pdf":
-        return pdf_to_markdown(path, ocr_mode=ocr_mode,
-                               page_markers=page_markers, glossary=glossary)
+        return pdf_to_markdown(path, ocr_mode=ocr_mode, page_markers=page_markers,
+                               glossary=glossary, layout=layout)
 
     if ext in IMAGE_EXT:
         md, meta = image_to_markdown(path, glossary=glossary)

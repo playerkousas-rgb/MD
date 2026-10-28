@@ -56,6 +56,18 @@ def guess_title(md: str, fallback: str) -> str:
     return fallback
 
 
+def _looks_complete(path: str) -> bool:
+    """判斷既有 .md 是否完整(至少要有內容,且不是明顯被截斷)。"""
+    try:
+        if os.path.getsize(path) < 8:
+            return False
+        with open(path, encoding="utf-8") as f:
+            data = f.read()
+        return bool(data.strip()) and data.endswith("\n")
+    except (OSError, UnicodeDecodeError):
+        return False
+
+
 def collect(src: str, exts: set[str]) -> list[str]:
     found = []
     for root, _dirs, names in os.walk(src):
@@ -88,14 +100,18 @@ def convert_one(src_path: str, src_root: str, out_root: str, args) -> dict:
         "category": os.path.dirname(rel) or ".",
         "warnings": [],
         "error": None,
+        "layout": None,
     }
 
     if os.path.exists(out_path) and not args.force:
-        rec["ok"] = True
-        rec["skipped"] = True
-        rec["chars"] = os.path.getsize(out_path)
-        rec["seconds"] = 0.0
-        return rec
+        if _looks_complete(out_path):
+            rec["ok"] = True
+            rec["skipped"] = True
+            rec["chars"] = os.path.getsize(out_path)
+            rec["seconds"] = 0.0
+            return rec
+        # 半截／損壞的輸出 → 重做,不要靜靜跳過
+        rec["warnings"].append("既有輸出不完整,已重新轉換")
 
     try:
         md, meta = core.convert_path(
@@ -103,6 +119,7 @@ def convert_one(src_path: str, src_root: str, out_root: str, args) -> dict:
             ocr_mode=args.ocr,
             page_markers=not args.no_page_markers,
             glossary=core.DEFAULT_GLOSSARY,
+            layout=args.layout,
         )
         md = (md or "").replace("\r\n", "\n")
 
@@ -118,12 +135,18 @@ def convert_one(src_path: str, src_root: str, out_root: str, args) -> dict:
             if meta.get("pages_ocr"):
                 fm.append("pages_ocr: %d" % meta["pages_ocr"])
                 fm.append("ocr_avg_score: %s" % (meta.get("ocr_avg_score") or 0))
+            fm.append("pipeline: %s" % ("pymupdf-layout" if meta.get("layout")
+                                        else "pymupdf-text"))
+            fm.append("ocr_engine: %s" % ("rapidocr" if meta.get("pages_ocr") else "none"))
             fm += ["---", "", ""]
             md = "\n".join(fm) + md
 
         os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
-        with open(out_path, "w", encoding="utf-8") as f:
+        # 原子寫入:中途崩潰不會留下半截 .md,否則續跑會把它當成「已完成」跳過
+        tmp = out_path + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
             f.write(md if md.endswith("\n") else md + "\n")
+        os.replace(tmp, out_path)
 
         rec.update(
             ok=True,
@@ -132,6 +155,7 @@ def convert_one(src_path: str, src_root: str, out_root: str, args) -> dict:
             pages_ocr=meta.get("pages_ocr") or 0,
             ocr_avg_score=meta.get("ocr_avg_score"),
             warnings=list(meta.get("warnings") or []),
+            layout=meta.get("layout"),
             sha256=sha256_file(src_path),
             title=guess_title(md, os.path.splitext(name)[0]),
         )
@@ -156,6 +180,10 @@ def main() -> int:
     ap.add_argument("--no-front-matter", dest="front_matter", action="store_false")
     ap.add_argument("--no-page-markers", action="store_true",
                     help="不要在每頁加 <!-- p.N --> 註記")
+    ap.add_argument("--layout", dest="layout", action="store_true", default=None,
+                    help="用 PyMuPDF 版面分析(標題／清單／表格);預設自動啟用")
+    ap.add_argument("--no-layout", dest="layout", action="store_false",
+                    help="只用純文字抽取(快,但沒有結構)")
     ap.add_argument("--ext", default=",".join(sorted(DOC_EXTS)),
                     help='只轉這些副檔名(逗號分隔);用 "all" 表示全部支援格式。預設:%(default)s')
     args = ap.parse_args()
@@ -245,7 +273,8 @@ def main() -> int:
         "failed": len(failed),
         "files": [
             {k: r[k] for k in ("md_file", "title", "category", "chars", "pages",
-                               "pages_ocr", "ocr_avg_score", "sha256", "source")}
+                               "pages_ocr", "ocr_avg_score", "sha256", "source",
+                               "layout")}
             | {"needs_review": bool(r["pages_ocr"]) or not r["ok"]}
             for r in results if r["ok"]
         ],

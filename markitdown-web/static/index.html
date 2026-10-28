@@ -177,6 +177,10 @@
           <button data-mode="never">關閉</button>
         </div>
       </div>
+      <label class="opt" title="用版面模型偵測標題、清單、表格;慢約 3–5 倍,但輸出有結構">
+        <input type="checkbox" id="layout" checked />
+        版面分析(標題／表格)
+      </label>
       <label class="opt">
         <input type="checkbox" id="frontmatter" checked />
         加入 YAML front matter
@@ -239,7 +243,8 @@ $("#ocrseg").addEventListener("click", (e) => {
 fetch("/api/health").then((r) => r.json()).then((h) => {
   const note = $("#ocrnote");
   if (h.ocr_available) {
-    note.textContent = `OCR 引擎就緒(${h.ocr_dpi} dpi,約 3 秒／頁)`;
+    note.textContent = `OCR 就緒(${h.ocr_dpi} dpi)` +
+      (h.layout_available ? " · 版面分析可用" : " · 版面分析不可用(需 PyMuPDF 2.0)");
   } else {
     note.textContent = "OCR 引擎未安裝,掃描檔只會抽出空白內容";
     note.style.color = "#f87171";
@@ -306,6 +311,7 @@ goBtn.onclick = async () => {
   fd.append("front_matter", $("#frontmatter").checked ? "true" : "false");
   fd.append("page_markers", $("#pagemarkers").checked ? "true" : "false");
   fd.append("ocr_mode", ocrMode);
+  fd.append("layout", $("#layout").checked ? "true" : "false");
 
   goBtn.disabled = true; clearBtn.disabled = true;
   resultsEl.innerHTML = "";
@@ -381,6 +387,7 @@ function render(results) {
       r.ok ? `${r.chars.toLocaleString()} 字元` : null,
       r.pages ? `${r.pages} 頁` : null,
       r.pages_ocr ? `OCR 信心 ${Math.round((r.ocr_avg_score || 0) * 100)}%` : null,
+      r.layout ? "版面分析" : "純文字",
       `${r.seconds}s`,
     ].filter(Boolean).join(" · ");
     div.appendChild(meta);

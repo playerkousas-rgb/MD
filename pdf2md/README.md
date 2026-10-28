@@ -138,6 +138,22 @@ curl -X POST "https://<project>.vercel.app/api/convert?filename=P110-26.pdf&ocr=
 
 ---
 
+## 四點五、這一版沒有版面分析(重要差異)
+
+本機版(`markitdown-web/`)用 **PyMuPDF 2.0 的版面模型**,文字頁會輸出標題、
+巢狀清單、真正的 Markdown 表格(79 份實測:表格 14 → 246、標題 10 → 1076)。
+
+**Vercel 版做不到**,因為 PyMuPDF 2.0 連同 ONNX 模型要 116MB,
+加上 onnxruntime、opencv、numpy 就撞爆 250MB 函數上限。
+這一版用 pypdfium2 抽純文字 —— 內容正確,但**沒有標題層級與表格**。
+
+實際選擇:
+
+| 你要 | 用哪個 |
+|---|---|
+| 隨手轉一份、看內容 | Vercel 版(夠用)|
+| 要進 `knowledge/` 餵 Gemini、要表格 | 本機版 `batch_convert.py` |
+
 ## 五、轉好的檔去哪裡?
 
 1. 在網頁上按「下載 .md」

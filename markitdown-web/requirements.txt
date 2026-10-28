@@ -6,7 +6,8 @@ python-multipart>=0.0.12
 
 # ---- OCR 相關 ----
 # 不用系統 Tesseract(要 apt、要語言包、容器體積大),全程 pip 安裝
-pymupdf>=1.24                # 把 PDF 頁面點陣化成 PNG 才交給 OCR
+pymupdf>=2.0                 # 2.0 內建 ONNX 版面模型:標題／清單／表格 → Markdown
+                             # 同時負責把頁面點陣化成 PNG 交給 OCR
 rapidocr-onnxruntime>=1.3    # PP-OCRv4 ONNX 模型,中英文,首次執行會下載 ~15MB 模型
 opencv-python-headless>=4.9  # rapidocr 依賴;必須用 headless,否則容器缺 libGL.so.1
 opencc-python-reimplemented>=0.1.7  # 簡體 → 香港繁體(s2hk),修正 OCR 簡繁混雜

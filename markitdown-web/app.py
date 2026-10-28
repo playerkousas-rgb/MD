@@ -80,7 +80,8 @@ def _front_matter(name: str, meta: dict) -> str:
 
 
 def _convert_one(filename: str, data: bytes, *, ocr_mode: str,
-                 front_matter: bool, page_markers: bool) -> dict:
+                 front_matter: bool, page_markers: bool,
+                 layout: bool | None = None) -> dict:
     """轉換單一檔案;任何錯誤都回報在 dict 內,不讓批次中斷。"""
     name = _safe_name(filename)
     ext = os.path.splitext(name)[1].lower()
@@ -88,7 +89,7 @@ def _convert_one(filename: str, data: bytes, *, ocr_mode: str,
         "filename": name, "ext": ext, "size": len(data), "ok": False,
         "markdown": "", "chars": 0, "seconds": 0.0,
         "warnings": [], "error": None, "pages": None,
-        "pages_ocr": 0, "ocr_avg_score": None,
+        "pages_ocr": 0, "ocr_avg_score": None, "layout": None,
     }
 
     if ext not in core.SUPPORTED_EXT:
@@ -108,11 +109,13 @@ def _convert_one(filename: str, data: bytes, *, ocr_mode: str,
         md, meta = core.convert_path(
             tmp_path, name, ocr_mode=ocr_mode,
             page_markers=page_markers, glossary=core.DEFAULT_GLOSSARY,
+            layout=layout,
         )
         md = (md or "").replace("\r\n", "\n")
         out["pages"] = meta.get("pages")
         out["pages_ocr"] = meta.get("pages_ocr") or 0
         out["ocr_avg_score"] = meta.get("ocr_avg_score")
+        out["layout"] = meta.get("layout")
         out["warnings"] = list(meta.get("warnings") or [])
 
         if not md.strip():
@@ -138,7 +141,7 @@ def _convert_one(filename: str, data: bytes, *, ocr_mode: str,
 
 
 def _run_batch(files: List[UploadFile], ocr_mode: str, front_matter: bool,
-               page_markers: bool) -> list[dict]:
+               page_markers: bool, layout: bool | None = None) -> list[dict]:
     if not files:
         raise HTTPException(400, "沒有收到檔案。")
     if len(files) > MAX_FILES:
@@ -159,7 +162,8 @@ def _run_batch(files: List[UploadFile], ocr_mode: str, front_matter: bool,
     workers = 1 if len(payload) <= 2 else min(2, len(payload))
     if workers == 1:
         return [_convert_one(n, d, ocr_mode=ocr_mode, front_matter=front_matter,
-                             page_markers=page_markers) for n, d in payload]
+                             page_markers=page_markers,
+                             layout=layout) for n, d in payload]
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = [
             pool.submit(_convert_one, n, d, ocr_mode=ocr_mode,
@@ -175,6 +179,8 @@ def health():
         "ok": True,
         "version": app.version,
         "ocr_available": core.ocr_available(),
+        "layout_available": core.layout_available(),
+        "pdf_engine": core.pdf_engine(),
         "ocr_dpi": core.OCR_DPI,
         "min_chars_per_page": core.MIN_CHARS_PER_PAGE,
         "max_upload_mb": MAX_BYTES // (1024 * 1024),
@@ -190,8 +196,10 @@ def convert(
     ocr_mode: str = Form("auto"),
     front_matter: bool = Form(False),
     page_markers: bool = Form(True),
+    layout: bool = Form(True),
 ):
-    return {"results": _run_batch(files, ocr_mode, front_matter, page_markers)}
+    return {"results": _run_batch(files, ocr_mode, front_matter,
+                                  page_markers, layout)}
 
 
 @app.post("/api/convert-zip")
@@ -200,8 +208,9 @@ def convert_zip(
     ocr_mode: str = Form("auto"),
     front_matter: bool = Form(False),
     page_markers: bool = Form(True),
+    layout: bool = Form(True),
 ):
-    results = _run_batch(files, ocr_mode, front_matter, page_markers)
+    results = _run_batch(files, ocr_mode, front_matter, page_markers, layout)
     buf = io.BytesIO()
     used: set[str] = set()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:

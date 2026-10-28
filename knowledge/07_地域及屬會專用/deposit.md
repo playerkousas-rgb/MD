@@ -5,6 +5,8 @@ source_format: "pdf"
 pages: 1
 pages_ocr: 1
 ocr_avg_score: 0.945
+pipeline: pymupdf-layout
+ocr_engine: rapidocr
 ---
 
 <!-- p.1 ocr -->
