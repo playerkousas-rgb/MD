@@ -5,8 +5,29 @@
 
 ```
 gemini/
-├── index.html   # 單一檔案:HTML + CSS + JS,無 build、無 CDN
-└── README.md
+├── 童軍問答-單檔.html   # ★ 實測用這個:79 份文件全部內嵌,雙擊即開
+├── index.html           # 需要 http server 的版本(知識庫另外載入)
+├── README.md
+└── (tools/build_gemini_single.py 產生單檔版)
+```
+
+## 〇、直接雙擊就能用(推薦)
+
+**雙擊 `童軍問答-單檔.html` 即可。**
+
+這一個檔案裡已經內嵌了全部 79 份 Markdown(約 1.5 MB)與索引,
+所以不需要起 server、不需要 Python、不需要網路(除了呼叫 Gemini)。
+
+> `index.html` 是用 `fetch("../knowledge/…")` 讀資料的版本。
+> 用 `file://` 雙擊時瀏覽器會擋掉 fetch(同源政策),所以那個版本必須
+> 用 http server 開,例如 `python -m http.server`。
+> 只是要問問題的話,用單檔版就好。
+
+要更新單檔版(例如 `knowledge/` 換了內容):
+
+```
+python3 tools/build_gemini_single.py
+python3 tools/build_gemini_single.py --check    # 只檢查是否過期
 ```
 
 配合的資料:
