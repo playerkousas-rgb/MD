@@ -212,6 +212,18 @@ def main() -> int:
     print("檔案:%d 個 | OCR 模式:%s | 平行:%d | OCR 可用:%s\n"
           % (len(files), args.ocr, args.workers, core.ocr_available()), flush=True)
 
+    env = core.runtime_report()
+    print("環境:Python %s | %s %s | 版面分析:%s | OCR:%s"
+          % (env["python"], env["pdf_engine"], env["pymupdf"],
+             "開" if env["layout_available"] else "關",
+             "可用" if env["ocr_available"] else "不可用"), flush=True)
+    env_warnings = core.layout_doctor()
+    if env_warnings:
+        print("", flush=True)
+        for line in env_warnings:
+            print(line, flush=True)
+        print("", flush=True)
+
     results: list[dict] = []
     t0 = time.time()
     done = 0
@@ -249,7 +261,7 @@ def main() -> int:
     csv_path = os.path.join(out_root, "_report.csv")
     cols = ["source", "md_file", "filename", "category", "ok", "skipped", "chars",
             "pages", "pages_ocr", "ocr_avg_score", "seconds", "sha256",
-            "title", "warnings", "error"]
+            "title", "warnings", "error", "layout"]
     with open(csv_path, "w", encoding="utf-8-sig", newline="") as f:
         w = csv.DictWriter(f, fieldnames=cols)
         w.writeheader()
@@ -268,6 +280,10 @@ def main() -> int:
         "source_root": os.path.relpath(src_root, os.path.dirname(out_root)),
         "ocr_mode": args.ocr,
         "total": len(results),
+        "layout_available": env["layout_available"],
+        "layout_docs": sum(1 for r in ok if r.get("layout")),
+        "python": env["python"],
+        "pymupdf": env["pymupdf"],
         "converted": len(ok),
         "skipped": len(skipped),
         "failed": len(failed),
@@ -285,6 +301,12 @@ def main() -> int:
     print("\n" + "=" * 66)
     print("完成:%d 個 | 跳過(已存在):%d | 失敗:%d | 耗時 %.1fs"
           % (len(ok), len(skipped), len(failed), elapsed))
+    got_layout = sum(1 for r in results if r.get("layout"))
+    if got_layout:
+        print("有版面分析(標題／表格):%d / %d 個" % (got_layout, len(results)))
+    elif results:
+        print("!! 全部 %d 個都沒有版面分析,輸出只有純文字 —— 原因見上面「環境」一節。"
+              % len(results))
     if ocr_files:
         print("經 OCR 的檔案 %d 個(這些建議人工抽查):" % len(ocr_files))
         for r in ocr_files[:15]:

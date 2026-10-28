@@ -22,6 +22,7 @@ from __future__ import annotations
 import io
 import os
 import re
+import sys
 import threading
 import warnings
 from typing import Iterable
@@ -508,6 +509,64 @@ def layout_available() -> bool:
         return False
 
 
+LAYOUT_MISSING_WARNING = (
+    "本機沒有版面分析:需要 PyMuPDF 2.0 及 Python 3.11 以上(PyMuPDF 1.x 沒有 to_markdown)。"
+    "已退回純文字模式,標題／清單／表格都不會有結構。"
+)
+
+
+def runtime_report() -> dict:
+    """回報執行環境:Python／PyMuPDF 版本、版面分析與 OCR 是否可用。"""
+    info = {
+        "python": "%d.%d.%d" % sys.version_info[:3],
+        "pdf_engine": pdf_engine(),
+        "pymupdf": None,
+        "ocr_available": False,
+        "layout_available": False,
+    }
+    try:
+        import pymupdf
+
+        info["pymupdf"] = (getattr(pymupdf, "__version__", None)
+                           or getattr(pymupdf, "VersionBind", None))
+    except Exception:  # noqa: BLE001
+        pass
+    try:
+        info["ocr_available"] = ocr_available()
+    except Exception:  # noqa: BLE001
+        pass
+    try:
+        info["layout_available"] = layout_available()
+    except Exception:  # noqa: BLE001
+        pass
+    return info
+
+
+def layout_fix_hint() -> str:
+    """告訴使用者怎樣把版面分析裝回來的具體一步。"""
+    v = sys.version_info
+    if v < (3, 11):
+        return ("你的 Python 是 %d.%d,要 3.11 或以上才會裝到 PyMuPDF 2.0。"
+                "請安裝 Python 3.11+(_setup.bat 會自動用它),"
+                "然後刪除 .venv 資料夾、重新雙擊 PDF2MD.bat。" % (v[0], v[1]))
+    return ("請在工具資料夾開 cmd 執行: "
+            '.venv\\Scripts\\python -m pip install -U "pymupdf>=2.0"'
+            "(macOS/Linux 用 .venv/bin/python),然後再轉換一次。")
+
+
+def layout_doctor() -> list:
+    """回傳要顯示給使用者的診斷訊息(空清單 = 一切正常)。"""
+    msgs: list[str] = []
+    info = runtime_report()
+    if not info["layout_available"]:
+        msgs.append("!! 版面分析沒有啟用 -> 標題／表格不會有結構")
+        msgs.append("   Python %s | PyMuPDF %s" % (info["python"], info["pymupdf"]))
+        msgs.append("   " + layout_fix_hint())
+    if not info["ocr_available"]:
+        msgs.append("!! OCR 沒有啟用 -> 掃描版 PDF 會完全抽不到文字")
+    return msgs
+
+
 def _pdf_to_markdown_layout(path: str, ocr_mode: str, page_markers: bool,
                             glossary: dict | None):
     """文字頁走版面分析,掃描頁走 OCR,逐頁合併。"""
@@ -614,10 +673,14 @@ def pdf_to_markdown(path: str, ocr_mode: str = "auto", page_markers: bool = True
     if ocr_mode not in OCR_MODES:
         ocr_mode = "auto"
 
+    layout_missing = False
     if layout is None:
         want = os.environ.get("PDF_LAYOUT", "auto").strip().lower()
-        layout = want in ("auto", "1", "true", "yes") and layout_available()
-    if layout and layout_available():
+        layout = want in ("auto", "1", "true", "yes")
+    if layout and not layout_available():
+        layout_missing = True
+        layout = False
+    if layout:
         return _pdf_to_markdown_layout(path, ocr_mode, page_markers, glossary)
 
     doc = _PdfDoc(path)
@@ -676,6 +739,8 @@ def pdf_to_markdown(path: str, ocr_mode: str = "auto", page_markers: bool = True
         "warnings": warnings_out,
         "layout": False,
     }
+    if layout_missing:
+        meta["warnings"].insert(0, LAYOUT_MISSING_WARNING)
     if pages_ocr:
         meta["warnings"].append(
             "本檔有 %d 頁經 OCR 辨識;OCR 會有錯字(尤其繁體),重要內容請人工核對。"

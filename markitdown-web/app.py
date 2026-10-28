@@ -175,9 +175,12 @@ def _run_batch(files: List[UploadFile], ocr_mode: str, front_matter: bool,
 
 @app.get("/api/health")
 def health():
+    env = core.runtime_report()
     return {
         "ok": True,
         "version": app.version,
+        "python": env["python"],
+        "pymupdf": env["pymupdf"],
         "ocr_available": core.ocr_available(),
         "layout_available": core.layout_available(),
         "pdf_engine": core.pdf_engine(),

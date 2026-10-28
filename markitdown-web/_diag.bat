@@ -22,6 +22,9 @@ set "OUT=%~dp0_diag.txt"
   where powershell 2^>nul
   powershell -NoProfile -Command "$PSVersionTable.PSVersion.ToString()" 2^>^&1
   echo.
+  echo ---- Conversion environment ----
+  ".venv\Scripts\python.exe" _diag_env.py 2^>^&1
+  echo.
   echo ---- Files present ----
   dir /b "%~dp0"
   echo.
