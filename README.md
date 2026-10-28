@@ -26,6 +26,9 @@ PDF ──(轉換器)──▶ knowledge/*.md ──(問答頁)──▶ Gemini 
 **👉 只想快點把 PDF 轉成 MD** → 先睇 **[`開始用-睇我.md`](開始用-睇我.md)**
 (下載邊個 ZIP、解壓、雙擊邊個檔,一頁講完)
 
+**👉 想有標題／表格,但顯示「版面分析:關」** → 睇 **[`更新Python-用CMD.md`](更新Python-用CMD.md)**
+(用 CMD 一行 `winget` 由 3.10 升到 3.12,附驗證指令)
+
 其他細節才需要看 **[`markitdown-web/本機使用指南.md`](markitdown-web/本機使用指南.md)**。
 Vercel 完全不需要。
 
