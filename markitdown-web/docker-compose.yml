@@ -7,4 +7,5 @@ services:
       - "8000:8000"
     environment:
       MAX_UPLOAD_MB: "100"
+      OCR_DPI: "200"        # 150 快約 4 成,200 準確度較好,再高對這個模型沒有幫助
     restart: unless-stopped

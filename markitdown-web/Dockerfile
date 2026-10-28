@@ -1,17 +1,25 @@
 FROM python:3.12-slim
 
-# pdfminer / pdfplumber 對 libxml 等無硬需求,但保留中文 locale 較省事
+# opencv-python-headless 仍會連結 libglib2.0,所以還是要裝這一個系統套件;
+# OCR 用 ONNX Runtime(CPU),不需要 CUDA 映像
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     MAX_UPLOAD_MB=100 \
     PORT=8000
 
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends libglib2.0-0 \
+ && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
+
+# OCR 點陣化解析度;150 快約 4 成,200 準確度較好,再高對這個模型沒有幫助
+ENV OCR_DPI=200
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app.py .
+COPY app.py convert_core.py batch_convert.py ./
 COPY static ./static
 
 # 非 root 使用者

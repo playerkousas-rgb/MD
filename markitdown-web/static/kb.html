@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>童軍文件知識庫 · 問答示範</title>
+<style>
+  :root {
+    --bg: #0b1220; --panel: #131c2e; --panel-2: #1a2438; --line: #263349;
+    --text: #e6edf7; --muted: #96a2b8; --accent: #4f9cf9; --ok: #3ddc97;
+    --warn: #fabd3c; --bad: #f87171;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.65 -apple-system, "Segoe UI", "PingFang HK", "Microsoft JhengHei", sans-serif;
+  }
+  a { color: var(--accent); }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 26px 20px 60px; }
+  header h1 { margin: 0 0 6px; font-size: 23px; letter-spacing: .3px; }
+  header p { margin: 0; color: var(--muted); font-size: 14px; }
+  .grid { display: grid; grid-template-columns: 320px 1fr; gap: 18px; margin-top: 20px; }
+  @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+  input[type=text], input[type=password], select, textarea {
+    width: 100%; background: var(--panel-2); color: var(--text);
+    border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px;
+    font: inherit; outline: none;
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+  button {
+    background: var(--accent); color: #06101f; border: 0; border-radius: 8px;
+    padding: 9px 16px; font: inherit; font-weight: 600; cursor: pointer;
+  }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  button.ghost { background: none; color: var(--muted); border: 1px solid var(--line); font-weight: 400; }
+
+  #docs { margin-top: 12px; max-height: 62vh; overflow: auto; }
+  .doc { padding: 8px 10px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; }
+  .doc:hover { background: var(--panel-2); }
+  .doc.on { background: rgba(79,156,249,.13); border-color: rgba(79,156,249,.5); }
+  .doc .t { font-size: 13.5px; line-height: 1.4; }
+  .doc .m { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .tag { display: inline-block; font-size: 10.5px; padding: 0 5px; border-radius: 4px;
+         background: rgba(250,189,60,.16); color: var(--warn); border: 1px solid rgba(250,189,60,.35); }
+
+  .ask { display: flex; gap: 10px; margin-bottom: 14px; }
+  .ask textarea { resize: vertical; min-height: 54px; }
+  .ask button { white-space: nowrap; padding: 0 22px; }
+  .row2 { display: flex; gap: 10px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+  .row2 label { font-size: 12.5px; color: var(--muted); }
+  .row2 input, .row2 select { width: auto; }
+
+  #answer { margin-top: 16px; }
+  #answer .body {
+    background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px;
+    padding: 16px 18px; white-space: pre-wrap; line-height: 1.75;
+  }
+  .src { margin-top: 10px; font-size: 12.5px; color: var(--muted); }
+  .src b { color: var(--text); font-weight: 600; }
+  .note { font-size: 12.5px; color: var(--muted); margin-top: 8px; }
+  .err { color: var(--bad); font-size: 13.5px; margin-top: 10px; white-space: pre-wrap; }
+  pre.md {
+    background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px; margin: 0; overflow: auto; max-height: 58vh;
+    white-space: pre-wrap; word-break: break-word; font-size: 13px; line-height: 1.7;
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+  .hint { font-size: 12.5px; color: var(--muted); }
+  .spinner { display: inline-block; width: 13px; height: 13px; border: 2px solid var(--muted);
+             border-top-color: transparent; border-radius: 50%; animation: sp .8s linear infinite;
+             vertical-align: -2px; margin-right: 6px; }
+  @keyframes sp { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>童軍文件知識庫</h1>
+    <p>由 MarkItDown + OCR 轉出的官方文件 Markdown,交給 Gemini 回答問題。答案會標出來源檔案。</p>
+  </header>
+
+  <div class="grid">
+    <!-- 左:文件清單 -->
+    <div class="panel">
+      <input type="text" id="filter" placeholder="篩選文件(標題／分類／檔名)…" />
+      <div class="hint" id="count" style="margin-top:8px"></div>
+      <div id="docs"></div>
+    </div>
+
+    <!-- 右:問答 / 預覽 -->
+    <div class="panel">
+      <div class="ask">
+        <textarea id="q" placeholder="例:舉辦寰宇童軍計劃探索課程要幾時提交申請表?"></textarea>
+        <button id="askBtn">問 Gemini</button>
+      </div>
+
+      <div class="row2">
+        <label>API key</label>
+        <input type="password" id="key" placeholder="貼上 Gemini API key(只存在你部機)" style="width:280px" />
+        <label>模型</label>
+        <select id="model">
+          <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+          <option value="gemini-2.5-pro">gemini-2.5-pro</option>
+          <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+        </select>
+        <label>引用文件數</label>
+        <select id="topk">
+          <option>2</option><option selected>4</option><option>6</option>
+        </select>
+        <button class="ghost" id="saveKey">記住 key</button>
+        <button class="ghost" id="clearKey">清除</button>
+      </div>
+
+      <div id="answer"></div>
+
+      <div id="preview" style="display:none;margin-top:16px">
+        <div class="row2" style="margin:0 0 8px">
+          <b id="pvName" style="font-size:13.5px"></b>
+          <a id="pvLink" href="#" target="_blank" rel="noopener" style="font-size:12.5px">開啟原始 .md</a>
+        </div>
+        <pre class="md" id="pvBody"></pre>
+      </div>
+
+      <div class="note" id="note">
+        按「問 Gemini」才會把<b>命中的幾份文件</b>送去 Google;其餘時間文件不會離開這台伺服器。
+        沒有 API key 也可以按左邊的文件直接預覽內容。
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const KB = "/kb";                     // 由 app.py 掛載的知識庫目錄
+let index = null;
+const cache = new Map();              // md_file -> 全文
+
+/* ---------------- 啟動 ---------------- */
+(async function init() {
+  $("#key").value = localStorage.getItem("geminiKey") || "";
+  $("#model").value = localStorage.getItem("geminiModel") || "gemini-2.5-flash";
+  try {
+    const res = await fetch(KB + "/_index.json");
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    index = await res.json();
+    renderDocs();
+    $("#count").textContent =
+      `${index.files.length} 份文件 · ${index.total} 個來源檔 · 轉換於 ${(index.generated_at || "").slice(0, 16)}`;
+  } catch (e) {
+    $("#count").textContent = "";
+    $("#note").innerHTML =
+      `讀不到 <code>${KB}/_index.json</code>(${e.message})。<br>` +
+      `請先執行 <code>python batch_convert.py ../out/dl -o ../knowledge</code>,並確認 app.py 有掛載 /kb。`;
+  }
+})();
+
+/* ---------------- 文件清單 ---------------- */
+function renderDocs() {
+  const q = $("#filter").value.trim().toLowerCase();
+  const box = $("#docs");
+  box.innerHTML = "";
+  (index.files || [])
+    .filter((f) => !q ||
+      (f.md_file + " " + f.title + " " + f.category).toLowerCase().includes(q))
+    .forEach((f) => {
+      const d = document.createElement("div");
+      d.className = "doc";
+      const t = document.createElement("div");
+      t.className = "t";
+      t.textContent = f.title || f.md_file;
+      const m = document.createElement("div");
+      m.className = "m";
+      m.textContent = `${f.category} · ${f.chars.toLocaleString()} 字` +
+                      (f.pages ? ` · ${f.pages} 頁` : "");
+      if (f.needs_review) {
+        const s = document.createElement("span");
+        s.className = "tag";
+        s.textContent = "OCR";
+        m.appendChild(document.createTextNode(" "));
+        m.appendChild(s);
+      }
+      d.append(t, m);
+      d.onclick = () => openDoc(f, d);
+      box.appendChild(d);
+    });
+  if (!box.children.length) box.innerHTML = '<div class="hint">沒有符合的文件。</div>';
+}
+$("#filter").addEventListener("input", () => index && renderDocs());
+
+async function loadDoc(f) {
+  if (cache.has(f.md_file)) return cache.get(f.md_file);
+  const res = await fetch(KB + "/" + encodeURI(f.md_file));
+  const text = res.ok ? await res.text() : "";
+  cache.set(f.md_file, text);
+  return text;
+}
+
+async function openDoc(f, el) {
+  document.querySelectorAll(".doc.on").forEach((x) => x.classList.remove("on"));
+  if (el) el.classList.add("on");
+  $("#preview").style.display = "block";
+  $("#pvName").textContent = f.md_file;
+  $("#pvLink").href = KB + "/" + encodeURI(f.md_file);
+  $("#pvBody").textContent = "載入中…";
+  $("#pvBody").textContent = await loadDoc(f);
+}
+
+/* ---------------- 檢索(在本機做,不外傳) ---------------- */
+function tokens(text) {
+  const out = new Set();
+  const lower = text.toLowerCase();
+  // 拉丁字/數字
+  (lower.match(/[a-z0-9]{2,}/g) || []).forEach((w) => out.add(w));
+  // 中文:相鄰兩字一組,對中文檢索夠用
+  const cjk = lower.replace(/[^\u4e00-\u9fa5]+/g, " ").split(/\s+/).filter(Boolean);
+  cjk.forEach((seg) => {
+    for (let i = 0; i < seg.length - 1; i++) out.add(seg.slice(i, i + 2));
+  });
+  return [...out];
+}
+
+function countOcc(hay, needle) {
+  return hay.split(needle).length - 1;
+}
+
+/**
+ * 檢索:用 IDF 加權,讓「探索課程」這類有辨識度的詞壓過「申請表」這種到處都有的詞。
+ * 全程在本機做,問句不會離開瀏覽器。
+ */
+async function retrieve(question, k) {
+  const toks = tokens(question);
+  if (!toks.length) return [];
+
+  const docs = await Promise.all(index.files.map(async (f) => {
+    const text = await loadDoc(f);
+    return { f, text, low: text.toLowerCase(), head: text.slice(0, 2500).toLowerCase() };
+  }));
+  const N = docs.length || 1;
+
+  // 先統計每個詞出現在幾份文件(document frequency)
+  const df = Object.create(null);
+  toks.forEach((t) => (df[t] = 0));
+  const counted = docs.map((d) => {
+    const c = Object.create(null);
+    for (const t of toks) {
+      const n = countOcc(d.low, t);
+      c[t] = n;
+      if (n) df[t]++;
+    }
+    return c;
+  });
+
+  docs.forEach((d, i) => {
+    let score = 0;
+    for (const t of toks) {
+      const n = counted[i][t];
+      if (!n) continue;
+      const idf = Math.log((N + 1) / (df[t] + 0.5));   // 罕見詞權重高
+      score += Math.min(n, 5) * idf * 1.0;             // 出現次數(有上限,避免長文件壓倒一切)
+      if (d.head.includes(t)) score += idf * 1.5;      // 開頭命中 → 通常是主題
+      if ((d.f.title || "").toLowerCase().includes(t)) score += idf * 2;  // 標題命中
+    }
+    d.score = score;
+  });
+
+  return docs
+    .filter((d) => d.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, k)
+    .map((d) => ({ f: d.f, sc: Math.round(d.score * 10) / 10, text: d.text }));
+}
+
+/* ---------------- 問 Gemini ---------------- */
+$("#askBtn").onclick = async () => {
+  const question = $("#q").value.trim();
+  const box = $("#answer");
+  if (!question) return;
+  if (!index) { box.innerHTML = '<div class="err">知識庫未載入。</div>'; return; }
+
+  const apiKey = $("#key").value.trim();
+  const model = $("#model").value;
+  const k = parseInt($("#topk").value, 10) || 4;
+
+  box.innerHTML = '<div class="note"><span class="spinner"></span>正在檢索文件…</div>';
+  try {
+    const hits = await retrieve(question, k);
+    if (!hits.length) {
+      box.innerHTML = '<div class="body">在文件庫中找不到相關內容。試下換個關鍵字,或者直接喺左邊瀏覽文件。</div>';
+      return;
+    }
+    if (!apiKey) {
+      box.innerHTML = '<div class="note">已找到相關文件,但未填 API key,所以只做檢索:</div>' +
+        hits.map((h) => `<div class="src"><b>${h.f.md_file}</b>(相關度 ${h.sc})</div>`).join("");
+      return;
+    }
+
+    box.innerHTML = '<div class="note"><span class="spinner"></span>Gemini 正在閱讀 ' +
+      hits.length + ' 份文件並作答…</div>';
+
+    const ctx = hits.map((h) => {
+      const marks = h.f.pages_ocr
+        ? `(注意:此檔有 ${h.f.pages_ocr}/${h.f.pages} 頁經 OCR,可能有錯字)`
+        : "";
+      return `### 檔案:${h.f.md_file} ${marks}\n${h.text.slice(0, 16000)}`;
+    }).join("\n\n---\n\n");
+
+    const system = [
+      "你是香港童軍總會的資料助理,只可以根據使用者提供的官方文件回答。",
+      "規則:",
+      "1. 如果文件中沒有答案,直接說「文件中未提及」,不要靠常識補充。",
+      "2. 每個答案要標明出自哪個檔案(用檔名),例如「(來源:P110-26.md)」。",
+      "3. 若引用的檔案標示了 OCR,而答案涉及日期、金額、通告編號、表格數字,",
+      "   要加一句提醒使用者核對原文。",
+      "4. 用香港繁體中文,簡潔作答,可以先給結論再列要點。",
+    ].join("\n");
+
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: system }] },
+          contents: [{
+            role: "user",
+            parts: [{ text: `以下是官方文件內容:\n\n${ctx}\n\n問題:${question}` }],
+          }],
+          generationConfig: { temperature: 0.2, maxOutputTokens: 1600 },
+        }),
+      }
+    );
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error((data.error && data.error.message) || ("HTTP " + res.status));
+    }
+    const cand = (data.candidates || [])[0] || {};
+    const text = ((cand.content && cand.content.parts) || [])
+      .map((p) => p.text || "").join("").trim() || "(Gemini 沒有回傳內容)";
+
+    box.innerHTML = "";
+    const body = document.createElement("div");
+    body.className = "body";
+    body.textContent = text;
+    box.appendChild(body);
+
+    const src = document.createElement("div");
+    src.className = "src";
+    src.innerHTML = "引用文件:" + hits.map((h) =>
+      `<div><b>${h.f.md_file}</b> — ${h.f.title || ""}` +
+      (h.f.needs_review ? ' <span class="tag">OCR</span>' : "") + "</div>").join("");
+    box.appendChild(src);
+  } catch (e) {
+    box.innerHTML = '<div class="err">失敗:' + e.message +
+      "\n(檢查 API key 是否有效、模型名稱是否可用、有無被瀏覽器 CORS／網絡攔截)</div>";
+  }
+};
+
+/* ---------------- key 管理 ---------------- */
+$("#saveKey").onclick = () => {
+  localStorage.setItem("geminiKey", $("#key").value.trim());
+  localStorage.setItem("geminiModel", $("#model").value);
+  $("#saveKey").textContent = "已記住 ✓";
+  setTimeout(() => ($("#saveKey").textContent = "記住 key"), 1500);
+};
+$("#clearKey").onclick = () => {
+  localStorage.removeItem("geminiKey");
+  $("#key").value = "";
+};
+$("#q").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) $("#askBtn").click();
+});
+</script>
+</body>
+</html>

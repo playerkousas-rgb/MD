@@ -77,6 +77,16 @@
 
   label.opt { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13.5px; cursor: pointer; }
   label.opt input { accent-color: var(--accent); width: 16px; height: 16px; }
+  .opts { display: flex; flex-wrap: wrap; gap: 18px 26px; margin-top: 14px;
+          padding-top: 14px; border-top: 1px solid var(--line); align-items: center; }
+  .seg { display: inline-flex; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .seg button { background: none; border: 0; color: var(--muted); font: inherit; font-size: 13px;
+                padding: 6px 13px; cursor: pointer; white-space: nowrap; }
+  .seg button + button { border-left: 1px solid var(--line); }
+  .seg button.on { background: var(--accent); color: #08111f; font-weight: 600; }
+  .lbl { color: var(--muted); font-size: 13.5px; }
+  .chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 6px; border-radius: 4px;
+          background: rgba(250,190,60,.16); color: #fabd3c; border: 1px solid rgba(250,190,60,.35); vertical-align: 1px; }
 
   button {
     font-family: inherit; font-size: 14px; border-radius: 10px; cursor: pointer;
@@ -145,24 +155,40 @@
 <div class="wrap">
   <header>
     <h1>MarkItDown 網頁版</h1>
-    <p class="sub">把 PDF、Word、PowerPoint、Excel、HTML 等轉成 Markdown — 自己架的轉換服務,檔案不經第三方。</p>
+    <p class="sub">把 PDF、Word、PowerPoint、Excel、圖片等轉成 Markdown — 自己架的轉換服務,內建 OCR,檔案不經第三方。</p>
   </header>
 
   <div class="panel">
     <div id="drop">
       <div class="icon">📄</div>
       <div class="main">拖放檔案到這裡,或點擊選擇</div>
-      <div class="hint" id="hint">支援 PDF、DOCX、PPTX、XLSX、HTML、CSV、EPUB 等 · 一次最多 20 個</div>
+      <div class="hint" id="hint">支援 PDF、DOCX、PPTX、XLSX、圖片(PNG/JPG)、HTML 等 · 一次最多 50 個</div>
     </div>
     <input type="file" id="picker" multiple />
 
     <div class="files" id="filelist"></div>
 
-    <div class="row between" style="margin-top:16px">
+    <div class="opts">
+      <div class="row" style="gap:10px">
+        <span class="lbl">OCR</span>
+        <div class="seg" id="ocrseg">
+          <button data-mode="auto" class="on">自動(只辨識掃描頁)</button>
+          <button data-mode="always">全部頁面</button>
+          <button data-mode="never">關閉</button>
+        </div>
+      </div>
       <label class="opt">
         <input type="checkbox" id="frontmatter" checked />
-        加入 YAML front matter(檔名／格式／轉換時間)
+        加入 YAML front matter
       </label>
+      <label class="opt">
+        <input type="checkbox" id="pagemarkers" checked />
+        標記頁碼 <code>&lt;!-- p.N --&gt;</code>
+      </label>
+    </div>
+
+    <div class="row between" style="margin-top:16px">
+      <div class="lbl" id="ocrnote"></div>
       <div class="row">
         <button class="ghost" id="clear" disabled>清除</button>
         <button class="primary" id="go" disabled>轉成 Markdown</button>
@@ -181,7 +207,9 @@
   <footer>
     由 <a href="https://github.com/microsoft/markitdown" target="_blank" rel="noopener">microsoft/markitdown</a>
     + FastAPI 組成 · 本機執行,檔案只存在記憶體與暫存檔<br />
-    掃描影像 PDF(沒有文字層)需要 OCR,本服務不會自動辨識圖片中的文字
+    <a href="/kbview">文件知識庫問答 →</a> ·
+    內建 OCR(RapidOCR,純 pip 安裝,不需系統 Tesseract)·
+    「自動」模式只會對沒有文字層的頁面做辨識,不會拖慢一般 PDF
   </footer>
 </div>
 
@@ -198,6 +226,26 @@ const resultBar = $("#resultbar");
 const summaryEl = $("#summary");
 
 let picked = [];   // {file, id}
+let ocrMode = "auto";
+
+/* ---------- OCR 模式切換 ---------- */
+$("#ocrseg").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-mode]");
+  if (!b) return;
+  ocrMode = b.dataset.mode;
+  [...$("#ocrseg").children].forEach((x) => x.classList.toggle("on", x === b));
+});
+
+/* ---------- 開頁時問一下後端 OCR 是否可用 ---------- */
+fetch("/api/health").then((r) => r.json()).then((h) => {
+  const note = $("#ocrnote");
+  if (h.ocr_available) {
+    note.textContent = `OCR 引擎就緒(${h.ocr_dpi} dpi,約 3 秒／頁)`;
+  } else {
+    note.textContent = "OCR 引擎未安裝,掃描檔只會抽出空白內容";
+    note.style.color = "#f87171";
+  }
+}).catch(() => {});
 
 /* ---------- 檔案選擇 ---------- */
 drop.addEventListener("click", () => picker.click());
@@ -257,6 +305,8 @@ goBtn.onclick = async () => {
   const fd = new FormData();
   picked.forEach((p) => fd.append("files", p.file, p.file.name));
   fd.append("front_matter", $("#frontmatter").checked ? "true" : "false");
+  fd.append("page_markers", $("#pagemarkers").checked ? "true" : "false");
+  fd.append("ocr_mode", ocrMode);
 
   goBtn.disabled = true; clearBtn.disabled = true;
   resultsEl.innerHTML = "";
@@ -298,7 +348,15 @@ function render(results) {
     const badge = document.createElement("span");
     badge.className = "badge " + (r.ok ? "ok" : "bad");
     badge.textContent = r.ok ? "已轉換" : "失敗";
-    head.append(nm, badge);
+    head.append(nm);
+    if (r.pages_ocr) {
+      const oc = document.createElement("span");
+      oc.className = "chip";
+      oc.textContent = `OCR ${r.pages_ocr}/${r.pages || "?"} 頁`;
+      oc.title = "這些頁面由 OCR 辨識,可能有錯字";
+      head.append(oc);
+    }
+    head.append(badge);
 
     if (r.ok) {
       const copy = document.createElement("button");
@@ -323,6 +381,7 @@ function render(results) {
       fmtSize(r.size),
       r.ok ? `${r.chars.toLocaleString()} 字元` : null,
       r.pages ? `${r.pages} 頁` : null,
+      r.pages_ocr ? `OCR 信心 ${Math.round((r.ocr_avg_score || 0) * 100)}%` : null,
       `${r.seconds}s`,
     ].filter(Boolean).join(" · ");
     div.appendChild(meta);
