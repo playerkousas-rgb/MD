@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MarkItDown 網頁版 — 檔案轉 Markdown</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --panel-2: #1e222b;
+    --line: #2a303c;
+    --text: #e6e9ef;
+    --muted: #9aa4b2;
+    --accent: #4f8cff;
+    --accent-2: #37d1a4;
+    --warn: #f0b849;
+    --err: #ff6b6b;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: radial-gradient(1200px 600px at 50% -10%, #1b2438 0%, var(--bg) 60%);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC",
+                 "PingFang TC", "Microsoft JhengHei", sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 40px 20px 80px; }
+  header { text-align: center; margin-bottom: 28px; }
+  h1 {
+    font-size: 30px; margin: 0 0 8px; letter-spacing: .5px;
+    background: linear-gradient(90deg, #8ab4ff, #37d1a4);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .sub { color: var(--muted); font-size: 14.5px; margin: 0; }
+  .sub code { background: var(--panel-2); padding: 2px 6px; border-radius: 5px; font-size: 13px; }
+
+  .panel {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 20px; margin-bottom: 18px;
+  }
+
+  #drop {
+    border: 2px dashed var(--line); border-radius: var(--radius);
+    padding: 44px 20px; text-align: center; cursor: pointer;
+    transition: border-color .18s, background .18s, transform .18s;
+    background: var(--panel-2);
+  }
+  #drop:hover { border-color: #3d67a8; }
+  #drop.over {
+    border-color: var(--accent); background: #17233a; transform: scale(1.005);
+  }
+  #drop .icon { font-size: 34px; margin-bottom: 8px; }
+  #drop .main { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  #drop .hint { color: var(--muted); font-size: 13px; }
+  input[type=file] { display: none; }
+
+  .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .row.between { justify-content: space-between; }
+
+  .files { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .file-item {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--panel-2); border: 1px solid var(--line);
+    border-radius: 10px; padding: 9px 12px; font-size: 13.5px;
+  }
+  .file-item .nm { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-item .sz { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .file-item .rm {
+    background: none; border: 0; color: var(--muted); cursor: pointer;
+    font-size: 17px; line-height: 1; padding: 0 2px;
+  }
+  .file-item .rm:hover { color: var(--err); }
+
+  label.opt { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13.5px; cursor: pointer; }
+  label.opt input { accent-color: var(--accent); width: 16px; height: 16px; }
+  .opts { display: flex; flex-wrap: wrap; gap: 18px 26px; margin-top: 14px;
+          padding-top: 14px; border-top: 1px solid var(--line); align-items: center; }
+  .seg { display: inline-flex; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .seg button { background: none; border: 0; color: var(--muted); font: inherit; font-size: 13px;
+                padding: 6px 13px; cursor: pointer; white-space: nowrap; }
+  .seg button + button { border-left: 1px solid var(--line); }
+  .seg button.on { background: var(--accent); color: #08111f; font-weight: 600; }
+  .lbl { color: var(--muted); font-size: 13.5px; }
+  .chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 6px; border-radius: 4px;
+          background: rgba(250,190,60,.16); color: #fabd3c; border: 1px solid rgba(250,190,60,.35); vertical-align: 1px; }
+
+  button {
+    font-family: inherit; font-size: 14px; border-radius: 10px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--panel-2); color: var(--text);
+    padding: 9px 16px; transition: background .15s, border-color .15s, opacity .15s;
+  }
+  button:hover:not(:disabled) { background: #252b36; border-color: #3a4351; }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  button.primary {
+    background: linear-gradient(180deg, #4f8cff, #3f74dd);
+    border-color: #5b95ff; color: #fff; font-weight: 600;
+  }
+  button.primary:hover:not(:disabled) { background: linear-gradient(180deg, #5d97ff, #4a80e6); }
+  button.ghost { background: transparent; }
+
+  #status { margin-top: 14px; font-size: 13.5px; color: var(--muted); min-height: 20px; }
+  #status.err { color: var(--err); }
+  .spinner {
+    display: inline-block; width: 13px; height: 13px; vertical-align: -2px;
+    border: 2px solid #3a4351; border-top-color: var(--accent);
+    border-radius: 50%; animation: spin .7s linear infinite; margin-right: 7px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .res {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: var(--radius); margin-bottom: 14px; overflow: hidden;
+  }
+  .res-head {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 13px 16px; background: var(--panel-2); border-bottom: 1px solid var(--line);
+  }
+  .res-head .nm { font-weight: 600; font-size: 14.5px; flex: 1; word-break: break-all; }
+  .badge {
+    font-size: 11.5px; padding: 2px 9px; border-radius: 999px;
+    border: 1px solid var(--line); color: var(--muted); white-space: nowrap;
+  }
+  .badge.ok { color: var(--accent-2); border-color: #245c4a; background: #12281f; }
+  .badge.bad { color: var(--err); border-color: #5c2a2a; background: #2a1414; }
+
+  .meta { padding: 8px 16px; font-size: 12.5px; color: var(--muted); display: flex; gap: 16px; flex-wrap: wrap; }
+  .warnbox {
+    margin: 0 16px 10px; padding: 9px 12px; font-size: 13px;
+    background: #2a2313; border: 1px solid #5c4a1f; border-radius: 8px; color: var(--warn);
+  }
+  .errbox {
+    margin: 0 16px 10px; padding: 9px 12px; font-size: 13px;
+    background: #2a1414; border: 1px solid #5c2a2a; border-radius: 8px; color: var(--err);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; word-break: break-word;
+  }
+  pre.md {
+    margin: 0; padding: 14px 16px; max-height: 380px; overflow: auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12.5px; line-height: 1.65; white-space: pre-wrap; word-break: break-word;
+    background: #12151b; color: #cdd6e3;
+  }
+  pre.md:empty::after { content: "(沒有內容)"; color: var(--muted); }
+
+  footer { text-align: center; color: var(--muted); font-size: 12.5px; margin-top: 36px; line-height: 1.9; }
+  footer a { color: #7aa7ff; text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  .kbd { background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; font-size: 11.5px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>MarkItDown 網頁版</h1>
+    <p class="sub">把 PDF、Word、PowerPoint、Excel、圖片等轉成 Markdown — 自己架的轉換服務,內建 OCR,檔案不經第三方。</p>
+  </header>
+
+  <div class="panel">
+    <div id="drop">
+      <div class="icon">📄</div>
+      <div class="main">拖放檔案到這裡,或點擊選擇</div>
+      <div class="hint" id="hint">支援 PDF、DOCX、PPTX、XLSX、圖片(PNG/JPG)、HTML 等 · 一次最多 50 個</div>
+    </div>
+    <input type="file" id="picker" multiple />
+
+    <div class="files" id="filelist"></div>
+
+    <div class="opts">
+      <div class="row" style="gap:10px">
+        <span class="lbl">OCR</span>
+        <div class="seg" id="ocrseg">
+          <button data-mode="auto" class="on">自動(只辨識掃描頁)</button>
+          <button data-mode="always">全部頁面</button>
+          <button data-mode="never">關閉</button>
+        </div>
+      </div>
+      <label class="opt" title="用版面模型偵測標題、清單、表格;慢約 3–5 倍,但輸出有結構">
+        <input type="checkbox" id="layout" checked />
+        版面分析(標題／表格)
+      </label>
+      <label class="opt">
+        <input type="checkbox" id="frontmatter" checked />
+        加入 YAML front matter
+      </label>
+      <label class="opt">
+        <input type="checkbox" id="pagemarkers" checked />
+        標記頁碼 <code>&lt;!-- p.N --&gt;</code>
+      </label>
+    </div>
+
+    <div class="row between" style="margin-top:16px">
+      <div class="lbl" id="ocrnote"></div>
+      <div class="row">
+        <button class="ghost" id="clear" disabled>清除</button>
+        <button class="primary" id="go" disabled>轉成 Markdown</button>
+      </div>
+    </div>
+    <div id="status"></div>
+  </div>
+
+  <div class="row between" id="resultbar" style="display:none;margin-bottom:12px">
+    <div style="font-size:14px;color:var(--muted)" id="summary"></div>
+    <button id="zip" class="ghost">⬇ 全部下載 (.zip)</button>
+  </div>
+
+  <div id="results"></div>
+
+  <footer>
+    由 <a href="https://github.com/microsoft/markitdown" target="_blank" rel="noopener">microsoft/markitdown</a>
+    + FastAPI 組成 · 本機執行,檔案只存在記憶體與暫存檔<br />
+    內建 OCR(RapidOCR,純 pip 安裝,不需系統 Tesseract)·
+    「自動」模式只會對沒有文字層的頁面做辨識,不會拖慢一般 PDF
+  </footer>
+</div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const picker = $("#picker");
+const drop = $("#drop");
+const listEl = $("#filelist");
+const goBtn = $("#go");
+const clearBtn = $("#clear");
+const statusEl = $("#status");
+const resultsEl = $("#results");
+const resultBar = $("#resultbar");
+const summaryEl = $("#summary");
+
+let picked = [];   // {file, id}
+let ocrMode = "auto";
+
+/* ---------- OCR 模式切換 ---------- */
+$("#ocrseg").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-mode]");
+  if (!b) return;
+  ocrMode = b.dataset.mode;
+  [...$("#ocrseg").children].forEach((x) => x.classList.toggle("on", x === b));
+});
+
+/* ---------- 開頁時問一下後端 OCR 是否可用 ---------- */
+fetch("/api/health").then((r) => r.json()).then((h) => {
+  const note = $("#ocrnote");
+  if (h.ocr_available) {
+    note.textContent = `OCR 就緒(${h.ocr_dpi} dpi)` +
+      (h.layout_available ? " · 版面分析可用" : " · 版面分析不可用(需 PyMuPDF 2.0)");
+  } else {
+    note.textContent = "OCR 引擎未安裝,掃描檔只會抽出空白內容";
+    note.style.color = "#f87171";
+  }
+}).catch(() => {});
+
+/* ---------- 檔案選擇 ---------- */
+drop.addEventListener("click", () => picker.click());
+picker.addEventListener("change", () => { addFiles(picker.files); picker.value = ""; });
+
+["dragenter", "dragover"].forEach((ev) =>
+  drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("over"); })
+);
+["dragleave", "drop"].forEach((ev) =>
+  drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove("over"); })
+);
+drop.addEventListener("drop", (e) => {
+  if (e.dataTransfer?.files?.length) addFiles(e.dataTransfer.files);
+});
+// 允許整頁拖放
+window.addEventListener("dragover", (e) => e.preventDefault());
+window.addEventListener("drop", (e) => {
+  e.preventDefault();
+  if (e.dataTransfer?.files?.length && !drop.contains(e.target)) addFiles(e.dataTransfer.files);
+});
+
+function addFiles(fileList) {
+  const max = 20;
+  for (const f of fileList) {
+    if (picked.length >= max) { setStatus("一次最多 " + max + " 個檔案。", true); break; }
+    if (picked.some((p) => p.file.name === f.name && p.file.size === f.size)) continue;
+    picked.push({ file: f, id: Math.random().toString(36).slice(2) });
+  }
+  renderList();
+}
+
+function renderList() {
+  listEl.innerHTML = "";
+  picked.forEach((p) => {
+    const el = document.createElement("div");
+    el.className = "file-item";
+    el.innerHTML = `
+      <span class="nm"></span>
+      <span class="sz">${fmtSize(p.file.size)}</span>
+      <button class="rm" title="移除">×</button>`;
+    el.querySelector(".nm").textContent = p.file.name;
+    el.querySelector(".rm").onclick = () => {
+      picked = picked.filter((x) => x.id !== p.id);
+      renderList();
+    };
+    listEl.appendChild(el);
+  });
+  goBtn.disabled = picked.length === 0;
+  clearBtn.disabled = picked.length === 0;
+}
+
+clearBtn.onclick = () => { picked = []; renderList(); resultsEl.innerHTML = ""; resultBar.style.display = "none"; setStatus(""); };
+
+/* ---------- 轉換 ---------- */
+goBtn.onclick = async () => {
+  if (!picked.length) return;
+  const fd = new FormData();
+  picked.forEach((p) => fd.append("files", p.file, p.file.name));
+  fd.append("front_matter", $("#frontmatter").checked ? "true" : "false");
+  fd.append("page_markers", $("#pagemarkers").checked ? "true" : "false");
+  fd.append("ocr_mode", ocrMode);
+  fd.append("layout", $("#layout").checked ? "true" : "false");
+
+  goBtn.disabled = true; clearBtn.disabled = true;
+  resultsEl.innerHTML = "";
+  resultBar.style.display = "none";
+  setStatus(`<span class="spinner"></span>正在轉換 ${picked.length} 個檔案…`, false);
+
+  try {
+    const res = await fetch("/api/convert", { method: "POST", body: fd });
+    if (!res.ok) {
+      const t = await res.text();
+      let msg = t;
+      try { msg = JSON.parse(t).detail || t; } catch (_) {}
+      throw new Error(msg);
+    }
+    const data = await res.json();
+    render(data.results);
+    const ok = data.results.filter((r) => r.ok).length;
+    setStatus(`完成:${ok} / ${data.results.length} 個檔案轉換成功。`, ok !== data.results.length);
+  } catch (e) {
+    setStatus("轉換失敗:" + e.message, true);
+  } finally {
+    goBtn.disabled = picked.length === 0;
+    clearBtn.disabled = picked.length === 0;
+  }
+};
+
+function render(results) {
+  resultsEl.innerHTML = "";
+  let okCount = 0, totalChars = 0;
+  results.forEach((r) => {
+    const div = document.createElement("div");
+    div.className = "res";
+
+    const head = document.createElement("div");
+    head.className = "res-head";
+    const nm = document.createElement("span");
+    nm.className = "nm";
+    nm.textContent = r.filename;
+    const badge = document.createElement("span");
+    badge.className = "badge " + (r.ok ? "ok" : "bad");
+    badge.textContent = r.ok ? "已轉換" : "失敗";
+    head.append(nm);
+    if (r.pages_ocr) {
+      const oc = document.createElement("span");
+      oc.className = "chip";
+      oc.textContent = `OCR ${r.pages_ocr}/${r.pages || "?"} 頁`;
+      oc.title = "這些頁面由 OCR 辨識,可能有錯字";
+      head.append(oc);
+    }
+    head.append(badge);
+
+    if (r.ok) {
+      const copy = document.createElement("button");
+      copy.textContent = "複製";
+      copy.onclick = async () => {
+        try {
+          await navigator.clipboard.writeText(r.markdown);
+          copy.textContent = "已複製 ✓";
+          setTimeout(() => (copy.textContent = "複製"), 1400);
+        } catch (_) { copy.textContent = "複製失敗"; }
+      };
+      const dl = document.createElement("button");
+      dl.textContent = "下載 .md";
+      dl.onclick = () => downloadMd(r);
+      head.append(copy, dl);
+    }
+    div.appendChild(head);
+
+    const meta = document.createElement("div");
+    meta.className = "meta";
+    meta.textContent = [
+      fmtSize(r.size),
+      r.ok ? `${r.chars.toLocaleString()} 字元` : null,
+      r.pages ? `${r.pages} 頁` : null,
+      r.pages_ocr ? `OCR 信心 ${Math.round((r.ocr_avg_score || 0) * 100)}%` : null,
+      r.layout ? "版面分析" : "純文字",
+      `${r.seconds}s`,
+    ].filter(Boolean).join(" · ");
+    div.appendChild(meta);
+
+    (r.warnings || []).forEach((w) => {
+      const box = document.createElement("div");
+      box.className = "warnbox";
+      box.textContent = "⚠ " + w;
+      div.appendChild(box);
+    });
+
+    if (r.error) {
+      const box = document.createElement("div");
+      box.className = "errbox";
+      box.textContent = r.error;
+      div.appendChild(box);
+    }
+
+    if (r.ok) {
+      const pre = document.createElement("pre");
+      pre.className = "md";
+      pre.textContent = r.markdown;
+      div.appendChild(pre);
+      okCount++;
+      totalChars += r.chars;
+    }
+    resultsEl.appendChild(div);
+  });
+
+  summaryEl.textContent = `${results.length} 個檔案 · ${okCount} 個成功 · 共 ${totalChars.toLocaleString()} 字元`;
+  resultBar.style.display = "flex";
+  $("#zip").onclick = () => downloadZip(results.filter((r) => r.ok));
+}
+
+function downloadMd(r) {
+  const name = r.filename.replace(/\.[^.]+$/, "") + ".md";
+  const blob = new Blob([r.markdown], { type: "text/markdown;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+}
+
+function downloadZip(items) {
+  // 前端打包,免後端往返;文字檔用 store 即可
+  // 這裡用簡單的 ZIP(uncompressed)實作,避免引入外部函式庫
+  const enc = new TextEncoder();
+  const files = items.map((r) => ({
+    name: r.filename.replace(/\.[^.]+$/, "") + ".md",
+    data: enc.encode(r.markdown),
+  }));
+  if (!files.length) return;
+
+  const chunks = [];
+  const central = [];
+  let offset = 0;
+  const crcTable = (() => {
+    const t = new Uint32Array(256);
+    for (let n = 0; n < 256; n++) {
+      let c = n;
+      for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+      t[n] = c >>> 0;
+    }
+    return t;
+  })();
+  const crc32 = (buf) => {
+    let c = 0xffffffff;
+    for (let i = 0; i < buf.length; i++) c = crcTable[(c ^ buf[i]) & 0xff] ^ (c >>> 8);
+    return (c ^ 0xffffffff) >>> 0;
+  };
+  const u16 = (n) => new Uint8Array([n & 0xff, (n >>> 8) & 0xff]);
+  const u32 = (n) => new Uint8Array([n & 0xff, (n >>> 8) & 0xff, (n >>> 16) & 0xff, (n >>> 24) & 0xff]);
+  const cat = (...arrs) => {
+    const len = arrs.reduce((s, a) => s + a.length, 0);
+    const out = new Uint8Array(len);
+    let p = 0;
+    arrs.forEach((a) => { out.set(a, p); p += a.length; });
+    return out;
+  };
+
+  files.forEach((f, i) => {
+    const nameBytes = enc.encode(f.name);
+    const crc = crc32(f.data);
+    const local = cat(
+      u32(0x04034b50), u16(20), u16(0x0800), u16(0), u16(0), u16(0),
+      u32(crc), u32(f.data.length), u32(f.data.length),
+      u16(nameBytes.length), u16(0), nameBytes, f.data
+    );
+    chunks.push(local);
+    central.push(cat(
+      u32(0x02014b50), u16(20), u16(20), u16(0x0800), u16(0), u16(0), u16(0),
+      u32(crc), u32(f.data.length), u32(f.data.length),
+      u16(nameBytes.length), u16(0), u16(0), u16(0), u16(0), u32(0),
+      u32(offset), nameBytes
+    ));
+    offset += local.length;
+  });
+
+  const centralBytes = cat(...central);
+  const end = cat(
+    u32(0x06054b50), u16(0), u16(0), u16(files.length), u16(files.length),
+    u32(centralBytes.length), u32(offset), u16(0)
+  );
+  const blob = new Blob([...chunks, centralBytes, end], { type: "application/zip" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "markdown-" + new Date().toISOString().slice(0, 10) + ".zip";
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+}
+
+/* ---------- 小工具 ---------- */
+function fmtSize(b) {
+  if (b < 1024) return b + " B";
+  if (b < 1048576) return (b / 1024).toFixed(1) + " KB";
+  return (b / 1048576).toFixed(2) + " MB";
+}
+function setStatus(html, isErr) {
+  statusEl.innerHTML = html;
+  statusEl.className = isErr ? "err" : "";
+}
+
+/* 開頁時讀取後端限制 */
+fetch("/api/health").then((r) => r.json()).then((h) => {
+  $("#hint").textContent =
+    `支援 ${h.formats.length} 種格式 · 一次最多 ${h.max_files} 個 · 單檔上限 ${h.max_upload_mb} MB`;
+}).catch(() => {});
+</script>
+</body>
+</html>

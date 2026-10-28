@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PDF → Markdown(OCR)</title>
+<style>
+  :root {
+    --bg: #0b1220; --panel: #131c2e; --panel-2: #1a2438; --line: #263349;
+    --text: #e6edf7; --muted: #96a2b8; --accent: #4f9cf9; --ok: #3ddc97;
+    --warn: #fabd3c; --bad: #f87171;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.65 -apple-system, "Segoe UI", "PingFang HK", "Microsoft JhengHei", sans-serif;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 28px 20px 70px; }
+  h1 { margin: 0 0 6px; font-size: 24px; }
+  .sub { margin: 0 0 22px; color: var(--muted); font-size: 14px; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
+  #drop {
+    border: 2px dashed var(--line); border-radius: 12px; padding: 34px 20px;
+    text-align: center; cursor: pointer; transition: .15s;
+  }
+  #drop.hot, #drop:hover { border-color: var(--accent); background: rgba(79,156,249,.06); }
+  #drop .icon { font-size: 30px; }
+  #drop .main { font-size: 16px; margin-top: 6px; }
+  #drop .hint { color: var(--muted); font-size: 12.5px; margin-top: 6px; }
+  input[type=file] { display: none; }
+  .files { margin-top: 14px; }
+  .file {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--panel-2); border: 1px solid var(--line);
+    border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; font-size: 13.5px;
+  }
+  .file .nm { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file .sz { color: var(--muted); font-size: 12px; }
+  .file .del { background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 15px; }
+  .opts { display: flex; flex-wrap: wrap; gap: 16px 24px; margin-top: 16px;
+          padding-top: 16px; border-top: 1px solid var(--line); align-items: center; }
+  .seg { display: inline-flex; background: var(--panel-2); border: 1px solid var(--line);
+         border-radius: 8px; overflow: hidden; }
+  .seg button { background: none; border: 0; color: var(--muted); font: inherit; font-size: 13px;
+                padding: 6px 13px; cursor: pointer; }
+  .seg button + button { border-left: 1px solid var(--line); }
+  .seg button.on { background: var(--accent); color: #08111f; font-weight: 600; }
+  label.opt { display: flex; align-items: center; gap: 8px; color: var(--muted);
+              font-size: 13.5px; cursor: pointer; }
+  label.opt input { accent-color: var(--accent); width: 16px; height: 16px; }
+  .row { display: flex; gap: 10px; align-items: center; }
+  .between { justify-content: space-between; }
+  .lbl { color: var(--muted); font-size: 13.5px; }
+  button.primary {
+    background: var(--accent); color: #06101f; border: 0; border-radius: 8px;
+    padding: 10px 22px; font: inherit; font-weight: 600; cursor: pointer;
+  }
+  button.ghost { background: none; color: var(--muted); border: 1px solid var(--line);
+                 border-radius: 8px; padding: 9px 16px; font: inherit; cursor: pointer; }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  #status { margin-top: 14px; font-size: 13.5px; color: var(--muted); min-height: 20px; }
+  .res { background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+         padding: 14px 16px; margin-top: 14px; }
+  .res-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .res-head .nm { font-weight: 600; font-size: 14px; flex: 1; word-break: break-all; }
+  .badge { font-size: 11.5px; padding: 1px 8px; border-radius: 20px; font-weight: 600; }
+  .badge.ok { background: rgba(61,220,151,.15); color: var(--ok); }
+  .badge.bad { background: rgba(248,113,113,.15); color: var(--bad); }
+  .chip { font-size: 11px; font-weight: 600; padding: 1px 6px; border-radius: 4px;
+          background: rgba(250,190,60,.16); color: var(--warn);
+          border: 1px solid rgba(250,190,60,.35); }
+  .res-head button { background: var(--panel-2); color: var(--text); border: 1px solid var(--line);
+                     border-radius: 6px; padding: 4px 10px; font: inherit; font-size: 12.5px;
+                     cursor: pointer; }
+  .meta { color: var(--muted); font-size: 12.5px; margin-top: 6px; }
+  .warnbox { margin-top: 8px; background: rgba(250,190,60,.08); border: 1px solid rgba(250,190,60,.3);
+             color: #f4d089; border-radius: 8px; padding: 8px 11px; font-size: 12.5px; }
+  .errbox { margin-top: 8px; background: rgba(248,113,113,.08); border: 1px solid rgba(248,113,113,.3);
+            color: #f9a8a8; border-radius: 8px; padding: 8px 11px; font-size: 12.5px; }
+  pre.md { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px;
+           padding: 12px; margin: 10px 0 0; max-height: 420px; overflow: auto;
+           white-space: pre-wrap; word-break: break-word; font-size: 12.5px; line-height: 1.65;
+           font-family: ui-monospace, Menlo, Consolas, monospace; }
+  footer { margin-top: 34px; color: var(--muted); font-size: 12.5px; line-height: 1.8; }
+  code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+  .spinner { display: inline-block; width: 13px; height: 13px; border: 2px solid var(--muted);
+             border-top-color: transparent; border-radius: 50%; animation: sp .8s linear infinite;
+             vertical-align: -2px; margin-right: 6px; }
+  @keyframes sp { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>PDF → Markdown</h1>
+  <p class="sub">
+    上載 PDF(或 Word／Excel／圖片),轉成 Markdown。掃描件會自動 OCR。
+    轉好的 <code>.md</code> 放進知識庫,再由 <b>Gemini 問答頁</b>讀取 —— 兩者是分開的。
+  </p>
+
+  <div class="panel">
+    <div id="drop">
+      <div class="icon">📄</div>
+      <div class="main">拖放檔案,或點擊選擇</div>
+      <div class="hint" id="hint">PDF、DOCX、XLSX、PPTX、PNG/JPG · 單檔上限載入中…</div>
+    </div>
+    <input type="file" id="picker" multiple />
+    <div class="files" id="filelist"></div>
+
+    <div class="opts">
+      <div class="row" style="gap:10px">
+        <span class="lbl">OCR</span>
+        <div class="seg" id="ocrseg">
+          <button data-mode="auto" class="on">自動(只辨識掃描頁)</button>
+          <button data-mode="always">全部頁面</button>
+          <button data-mode="never">關閉</button>
+        </div>
+      </div>
+      <label class="opt"><input type="checkbox" id="pagemarkers" checked /> 標記頁碼</label>
+      <label class="opt"><input type="checkbox" id="frontmatter" /> 加入 YAML front matter</label>
+    </div>
+
+    <div class="row between" style="margin-top:16px">
+      <div class="lbl" id="note"></div>
+      <div class="row">
+        <button class="ghost" id="clear" disabled>清除</button>
+        <button class="primary" id="go" disabled>轉成 Markdown</button>
+      </div>
+    </div>
+    <div id="status"></div>
+  </div>
+
+  <div id="results"></div>
+
+  <footer>
+    單檔上限受 Vercel 函數的請求大小限制(約 4MB);更大的檔案、或一次轉幾十份,
+    請用 repo 內的 <code>markitdown-web/</code>(本機版或 <code>batch_convert.py</code>),
+    那裡沒有這些限制。<br />
+    伺服器端 OCR:RapidOCR(PP-OCRv4)· 簡轉繁:OpenCC <code>s2hk</code>。
+  </footer>
+</div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const picker = $("#picker"), drop = $("#drop"), listEl = $("#filelist");
+const goBtn = $("#go"), clearBtn = $("#clear"), statusEl = $("#status");
+const resultsEl = $("#results");
+
+let picked = [];          // {file, id}
+let ocrMode = "auto";
+let limitMB = 4;
+
+/* ---------- 健康檢查:取得上限與 OCR 狀態 ---------- */
+fetch("/api/health").then((r) => r.json()).then((h) => {
+  limitMB = h.max_upload_mb || 4;
+  $("#hint").textContent =
+    `PDF、DOCX、XLSX、PPTX、PNG/JPG · 單檔上限 ${limitMB} MB · PDF 引擎 ${h.pdf_engine || "?"}`;
+  const note = $("#note");
+  if (h.ocr_available) {
+    note.textContent = `OCR 就緒(${h.ocr_dpi} dpi,約 3–4 秒／頁)`;
+  } else {
+    note.textContent = "OCR 不可用,掃描件只會得到空白內容";
+    note.style.color = "#f87171";
+  }
+}).catch(() => {
+  $("#hint").textContent = "PDF、DOCX、XLSX、PPTX、PNG/JPG";
+  $("#note").textContent = "無法連上 /api/health(本機預覽請用 local_server.py)";
+});
+
+/* ---------- 檔案挑選 ---------- */
+$("#ocrseg").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-mode]");
+  if (!b) return;
+  ocrMode = b.dataset.mode;
+  [...$("#ocrseg").children].forEach((x) => x.classList.toggle("on", x === b));
+});
+
+drop.onclick = () => picker.click();
+picker.onchange = () => { addFiles(picker.files); picker.value = ""; };
+["dragenter", "dragover"].forEach((ev) =>
+  drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("hot"); }));
+["dragleave", "drop"].forEach((ev) =>
+  drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove("hot"); }));
+drop.addEventListener("drop", (e) => addFiles(e.dataTransfer.files));
+
+function addFiles(fileList) {
+  [...fileList].forEach((f) => {
+    if (picked.some((p) => p.file.name === f.name && p.file.size === f.size)) return;
+    picked.push({ file: f, id: Math.random().toString(36).slice(2) });
+  });
+  renderList();
+}
+
+function renderList() {
+  listEl.innerHTML = "";
+  picked.forEach((p) => {
+    const row = document.createElement("div");
+    row.className = "file";
+    const nm = document.createElement("span");
+    nm.className = "nm"; nm.textContent = p.file.name;
+    const sz = document.createElement("span");
+    sz.className = "sz"; sz.textContent = fmtSize(p.file.size);
+    const del = document.createElement("button");
+    del.className = "del"; del.textContent = "✕"; del.title = "移除";
+    del.onclick = () => { picked = picked.filter((x) => x.id !== p.id); renderList(); };
+    row.append(nm, sz, del);
+    listEl.appendChild(row);
+  });
+  goBtn.disabled = !picked.length;
+  clearBtn.disabled = !picked.length;
+}
+
+clearBtn.onclick = () => {
+  picked = []; renderList(); resultsEl.innerHTML = "";
+  statusEl.textContent = "";
+};
+
+/* ---------- 轉換(逐個上載,因為 Vercel 一次只收一個 body) ---------- */
+goBtn.onclick = async () => {
+  if (!picked.length) return;
+  goBtn.disabled = true; clearBtn.disabled = true;
+  resultsEl.innerHTML = "";
+
+  const total = picked.length;
+  let done = 0, okCount = 0;
+  for (const p of picked) {
+    statusEl.innerHTML = `<span class="spinner"></span>正在轉換 ${done + 1}/${total}:${escapeHtml(p.file.name)}`;
+    const card = document.createElement("div");
+    card.className = "res";
+    card.innerHTML = `<div class="res-head"><span class="nm">${escapeHtml(p.file.name)}</span>
+      <span class="badge ok" style="background:rgba(150,162,184,.15);color:#96a2b8">處理中…</span></div>`;
+    resultsEl.appendChild(card);
+
+    if (p.file.size > limitMB * 1024 * 1024) {
+      renderError(card, p.file.name,
+        `檔案 ${fmtSize(p.file.size)} 超過 ${limitMB} MB 上限(Vercel 函數限制)。請用本機版轉換。`);
+      done++; continue;
+    }
+
+    try {
+      const qs = new URLSearchParams({
+        filename: p.file.name,
+        ocr: ocrMode,
+        markers: $("#pagemarkers").checked ? "1" : "0",
+        frontmatter: $("#frontmatter").checked ? "1" : "0",
+      });
+      const res = await fetch("/api/convert?" + qs.toString(), {
+        method: "POST",
+        headers: { "Content-Type": "application/octet-stream" },
+        body: p.file,
+      });
+      const data = await res.json().catch(() => ({ ok: false, error: `HTTP ${res.status}` }));
+      if (data.ok) { renderResult(card, data); okCount++; }
+      else { renderError(card, p.file.name, data.error || `HTTP ${res.status}`); }
+    } catch (e) {
+      renderError(card, p.file.name, e.message);
+    }
+    done++;
+  }
+
+  statusEl.textContent = `完成:${okCount} / ${total} 個檔案轉換成功。`;
+  goBtn.disabled = !picked.length;
+  clearBtn.disabled = !picked.length;
+};
+
+function renderResult(card, r) {
+  card.innerHTML = "";
+  const head = document.createElement("div");
+  head.className = "res-head";
+  const nm = document.createElement("span"); nm.className = "nm"; nm.textContent = r.filename;
+  head.appendChild(nm);
+  if (r.pages_ocr) {
+    const oc = document.createElement("span");
+    oc.className = "chip";
+    oc.textContent = `OCR ${r.pages_ocr}/${r.pages || "?"} 頁`;
+    head.appendChild(oc);
+  }
+  const badge = document.createElement("span");
+  badge.className = "badge ok"; badge.textContent = "已轉換";
+  head.appendChild(badge);
+
+  const copy = document.createElement("button");
+  copy.textContent = "複製";
+  copy.onclick = async () => {
+    try {
+      await navigator.clipboard.writeText(r.markdown);
+      copy.textContent = "已複製 ✓";
+      setTimeout(() => (copy.textContent = "複製"), 1400);
+    } catch (_) { copy.textContent = "複製失敗"; }
+  };
+  const dl = document.createElement("button");
+  dl.textContent = "下載 .md";
+  dl.onclick = () => {
+    const blob = new Blob([r.markdown], { type: "text/markdown;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = r.filename.replace(/\.[^.]+$/, "") + ".md";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  };
+  head.append(copy, dl);
+  card.appendChild(head);
+
+  const meta = document.createElement("div");
+  meta.className = "meta";
+  meta.textContent = [
+    fmtSize(r.size),
+    `${(r.chars || 0).toLocaleString()} 字元`,
+    r.pages ? `${r.pages} 頁` : null,
+    r.pages_ocr ? `OCR 信心 ${Math.round((r.ocr_avg_score || 0) * 100)}%` : null,
+    `${r.seconds}s`,
+  ].filter(Boolean).join(" · ");
+  card.appendChild(meta);
+
+  (r.warnings || []).forEach((w) => {
+    const box = document.createElement("div");
+    box.className = "warnbox"; box.textContent = "⚠ " + w;
+    card.appendChild(box);
+  });
+
+  const pre = document.createElement("pre");
+  pre.className = "md"; pre.textContent = r.markdown;
+  card.appendChild(pre);
+}
+
+function renderError(card, name, msg) {
+  card.innerHTML = "";
+  const head = document.createElement("div");
+  head.className = "res-head";
+  const nm = document.createElement("span"); nm.className = "nm"; nm.textContent = name;
+  const badge = document.createElement("span");
+  badge.className = "badge bad"; badge.textContent = "失敗";
+  head.append(nm, badge);
+  card.appendChild(head);
+  const box = document.createElement("div");
+  box.className = "errbox"; box.textContent = msg;
+  card.appendChild(box);
+}
+
+function fmtSize(b) {
+  if (b < 1024) return b + " B";
+  if (b < 1048576) return (b / 1024).toFixed(1) + " KB";
+  return (b / 1048576).toFixed(1) + " MB";
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) => (
+    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+</script>
+</body>
+</html>

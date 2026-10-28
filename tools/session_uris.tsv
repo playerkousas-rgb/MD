@@ -1,0 +1,5 @@
+# id	upload_id	session_crd
+# One-time session URIs are NOT committed. They are kept in a local-only file
+# (out/session_uris_local.tsv, gitignored) and published as a dangling blob;
+# only its SHA is committed in tools/upload_sessions_blob.txt.
+# All sessions in this run have been consumed and are no longer usable.

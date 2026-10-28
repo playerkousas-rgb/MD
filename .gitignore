@@ -1,0 +1,14 @@
+# Working artefacts for the 童軍PDF補收 download task (not committed)
+out/
+__pycache__/
+*.pyc
+*.zip
+
+# one-time pre-authorized Drive upload session URIs (never commit)
+tools/upload_sessions.json
+out/
+out/session_uris_local.tsv
+
+# MarkItDown web app
+markitdown-web/.venv/
+markitdown-web/__pycache__/
