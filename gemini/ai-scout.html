@@ -293,11 +293,21 @@ function excerptOf(text,toks,idf){
   if(text.length<=SMALL)return {whole:true,parts:null};
   var chunks=[];
   splitPages(text).forEach(function(c){splitBig(c).forEach(function(x){if(x.text.trim())chunks.push(x)})});
+  /* 用「呢個字在該文件出現於幾多頁」做權重：表格頁成日重複「制服／帽／男團員」，
+     但「恤衫／杏色／深資」只在少數頁出現，後者才係答案所在。 */
+  var pf=Object.create(null);toks.forEach(function(t){pf[t]=0});
+  chunks.forEach(function(c){var low=c.text.toLowerCase();toks.forEach(function(t){if(low.indexOf(t)>=0)pf[t]++})});
+  var P=chunks.length||1;
+  function lidf(t){return Math.log((P+1)/((pf[t]||0)+0.5))}
   var scored=[];
   chunks.forEach(function(c,idx){
-    var low=c.text.toLowerCase(),s=0;
-    toks.forEach(function(t){var n=countOcc(low,t);if(n)s+=Math.min(n,5)*(idf[t]||0)});
-    if(s>0)scored.push({i:idx,page:c.page,text:c.text,s:s});
+    var low=c.text.toLowerCase(),s=0,cover=0;
+    toks.forEach(function(t){
+      var n=countOcc(low,t);if(!n)return;
+      s+=Math.min(n,5)*lidf(t);
+      cover+=lidf(t);          /* 覆蓋「幾多個唔同關鍵詞」，唔係同一個字出現幾多次 */
+    });
+    if(s>0)scored.push({i:idx,page:c.page,text:c.text,s:s+cover*2.5});
   });
   if(!scored.length)return {whole:false,parts:[{page:chunks[0]?chunks[0].page:1,text:text.slice(0,6000)}],pages:"?"};
   scored.sort(function(a,b){return b.s-a.s});
@@ -307,7 +317,7 @@ function excerptOf(text,toks,idf){
     if(i<0||i>=chunks.length||seen[i])return;
     seen[i]=1;entries.push({i:i,page:chunks[i].page,text:chunks[i].text,pri:pri});
   }
-  scored.slice(0,3).forEach(function(x,k){add(x.i,k);add(x.i-1,10+k);add(x.i+1,10+k)});
+  scored.slice(0,5).forEach(function(x,k){add(x.i,k);add(x.i-1,10+k);add(x.i+1,10+k)});
   entries.sort(function(a,b){return a.i-b.i});
   var total=0,keep=[],BUDGET=30000;
   entries.forEach(function(x){if(x.pri<10){keep.push(x);total+=x.text.length}});
@@ -327,8 +337,28 @@ function tokens(t){
   return Array.from(out);
 }
 function countOcc(h,n){return h.split(n).length-1}
+/* 口語 → 文件用詞：問「食煙」文件寫「吸煙」、問「飲酒」文件寫「酒精」，唔對照就係零命中 */
+var SYN=[["食煙","吸煙"],["抽煙","吸煙"],["食菸","吸煙"],["吸菸","吸煙"],["煙草","吸煙"],
+         ["飲酒","酒精"],["喝酒","酒精"],["飲啤酒","酒精"],["啤酒","酒精"],["紅酒","酒精"],["烈酒","酒精"],["含酒精","酒精"],
+         ["露營","營地"],["露宿","營地"],["宿營","營地"],["營友","營地"],["營舍","營地"],["營區","營地"],
+         ["場地","營地"],["帳篷","露營"],["泊車","車輛"]];
+function aliasTokens(q){
+  var s=String(q),out=[];
+  SYN.forEach(function(p){ if(s.indexOf(p[0])>=0) out=out.concat(tokens(p[1])) });
+  return out;
+}
+/* 問句屬邊個範疇，就優先讀該目錄：唔加呢層，40 萬字嘅大書一定壓過一兩千字嘅營地守則 */
+var CATS=[["營地|營友|營舍|營區|露營|宿營|場地|借用|燒烤|泳池|射箭場|攀爬|無人機|泊車|離營","09_"],
+          ["制服|帽|徽章|勳章|領巾|肩章|儀容|襪|皮鞋|皮帶","10_"],
+          ["進度性獎章|段章|支部訓練|綱要|小童軍|幼童軍|深資童軍|樂行童軍","02_"]];
+function catDirs(q){
+  var s=String(q),d=[];
+  CATS.forEach(function(c){ if(new RegExp(c[0]).test(s)) d.push(c[1]) });
+  return d;
+}
 async function retrieve(question,k,files){
   var toks=tokens(question);
+  aliasTokens(question).forEach(function(x){if(toks.indexOf(x)<0)toks.push(x)});
   if(!toks.length)return [];
   var docs=[];
   for(var i=0;i<files.length;i++){
@@ -356,10 +386,18 @@ async function retrieve(question,k,files){
   });
   var idf=Object.create(null);
   toks.forEach(function(t){idf[t]=Math.log((N+1)/(df[t]+0.5))});
-  return docs.filter(function(d){return d.score>0})
-    .sort(function(a,b){return b.score-a.score})
-    .slice(0,k)
-    .map(function(d){
+  var pool=docs.filter(function(d){return d.score>0})
+    .sort(function(a,b){return b.score-a.score});
+  var dirs=catDirs(question);
+  if(dirs.length){
+    var pri=pool.filter(function(d){
+      var pa=pathOf(d.f);
+      return dirs.some(function(x){return pa.indexOf(x)>=0});
+    }).slice(0,k);
+    var rest=pool.filter(function(d){return pri.indexOf(d)<0});
+    pool=pri.concat(rest);
+  }
+  return pool.slice(0,k).map(function(d){
       return {f:d.f,sc:Math.round(d.score*10)/10,text:d.text,excerpt:excerptOf(d.text,toks,idf)};
     });
 }
@@ -379,7 +417,11 @@ var SYSTEM=[
   "就算【答案】已經總結，這裡仍然要列出全部具體項目；寧願列多，唔好漏。）",
   "【根據】",
   "（列點，每份引用文件獨立一行，以「- 」開頭，格式：「- 檔名 第 X 頁：關鍵原文一句」；最多列 5 份。）",
-  "規則：文件中找不到答案時，【答案】寫「文件中未提及」，【要點】建議相關文件類別。不要猜測。",
+  "規則一：文件中找不到答案時，【答案】寫「文件中未提及」，【要點】建議相關文件類別。不要猜測。",
+  "規則二：不可以由概括條文推論出某項活動被禁止。例如問「可否飲酒」，而文件只寫「嚴禁違反本港法律的活動，如醉酒鬧事」或「嚴禁擾亂公眾秩序」，"+
+  "那就只可以照抄該條文，並在【答案】寫「文件中未直接禁止（只列明…）」，絕對不可以答「不可以」。同理，「保持安靜」「必須離營」「嚴禁生火」都不等於禁止其他活動。",
+  "規則三：問某個場所（例如某個營地）時，只可以用該場所自己的規則作答；其他場所的規則只可以在【要點】註明「（另一場地）」，不可以當成同一規定。",
+  "規則四：【根據】每一點必須寫出檔名及頁碼，該句必須真的在文件原文出現過；沒有原文就不要寫那一點。",
   "若引用的檔案標示了 OCR，而答案涉及日期、金額或通告編號，在【要點】最後加一句提醒核對原文。",
   "一律用香港繁體中文。全文（三段合計）不超過 1000 字，寧短勿長。"
 ].join("\n");
@@ -559,7 +601,7 @@ $("askBtn").onclick=async function(){
   if(!q||busy)return;
   if(!index){box.innerHTML='<div class="err">知識庫未載入，請開右上角 ⚙ 看「診斷紀錄」。</div>';return}
   busy=true;$("askBtn").disabled=true;lsSet("sk_lastq",q);
-  var k=parseInt(lsGet("sk_k"),10)||8,hits=null;
+  var k=parseInt(lsGet("sk_k"),10)||12,hits=null;
   try{
     var total=index.files.length;
     if(cache.size<total){
