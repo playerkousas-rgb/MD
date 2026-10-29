@@ -5,7 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 IDX = Path(__file__).with_name("site_index_20261029.txt")
-DIRS = ["knowledge", "政策指引", "行政", "資助計劃"]
+DIRS = ["knowledge"]
 LABELS = {"3": "政策／指引", "4": "行政", "5": "資助計劃"}
 
 def norm(s):
@@ -55,26 +55,28 @@ for r in rows:
 
 # ---------- 人工對照表：官網 PDF 檔名 → 本地檔（檔名與內文都對不上時用） ----------
 OVERRIDES = {
-    "C_Safety_Precaution_in_Scout_Pioneering": "政策指引/進行童軍先鋒工程活動安全須知.md",
-    "guidelines_Chi_2021": "政策指引/童軍成員向外界發放童軍消息注意事項.md",
-    "P114-16": "政策指引/深資童軍支部之訓練班.md",
-    "P091-15": "政策指引/樂行童軍支部各級徽章簽發及領取／購買方法.md",
-    "P059-15": "政策指引/童軍支部「童軍探索獎章」與幼童軍支部各級徽章豁免考驗安排.md",
-    "P110-13": "政策指引/小童軍支部各級徽章簽發及購買方法.md",
-    "ACR0912C_R": "政策指引/透過本會網頁獲取資訊及以「電子郵件」方式收取本會文件.md",
-    "P092-11": "政策指引/「童軍露營訓練班」開辦指引.md",
-    "P0101-10": "政策指引/深資童軍支部之學習時數.md",
-    "ITCR0109C": "政策指引/童軍網站指引.md",
-    "UG0002": "政策指引/童軍網站指引.md",
-    "P174-04": "政策指引/童軍專科徽章訓練班及考驗.md",
-    "ACR0704C": "政策指引/申請佩戴紀念章指引.md",
-    "P105-04": "政策指引/樂行童軍擔任領袖工作.md",
-    "P084S-00": "政策指引/特能童軍活動 - 傷健共融.md",
-    "T032000Feb": "政策指引/借用場地舉辦訓練班的注意事項.md",
-    "SubsidyScheme02_2026Apr_C_ssnlt": "資助計劃/有經濟需要之童軍領袖訓練資助計劃（2026 - 2027）.md",
-    "SubsidyScheme03_2026Apr_C_os": "資助計劃/青年領袖發展計劃（海外活動津貼）（2026 - 2027）.md",
-    "AdmCir302020_LTIFoundationSubsidy_C_Final": "資助計劃/領袖訓練學院基金「進修資助計劃」申請章則及指引.md",
+    # 官網 PDF 檔名（去掉 .pdf）      本地檔名（只寫檔名，路徑自動找）
+    "C_Safety_Precaution_in_Scout_Pioneering": "進行童軍先鋒工程活動安全須知.md",
+    "guidelines_Chi_2021": "童軍成員向外界發放童軍消息注意事項.md",
+    "P114-16": "深資童軍支部之訓練班.md",
+    "P091-15": "樂行童軍支部各級徽章簽發及領取／購買方法.md",
+    "P059-15": "童軍支部「童軍探索獎章」與幼童軍支部各級徽章豁免考驗安排.md",
+    "P110-13": "小童軍支部各級徽章簽發及購買方法.md",
+    "ACR0912C_R": "透過本會網頁獲取資訊及以「電子郵件」方式收取本會文件.md",
+    "P092-11": "「童軍露營訓練班」開辦指引.md",
+    "P0101-10": "深資童軍支部之學習時數.md",
+    "ITCR0109C": "童軍網站指引.md",
+    "UG0002": "童軍網站指引.md",
+    "P174-04": "童軍專科徽章訓練班及考驗.md",
+    "ACR0704C": "申請佩戴紀念章指引.md",
+    "P105-04": "樂行童軍擔任領袖工作.md",
+    "P084S-00": "特能童軍活動 - 傷健共融.md",
+    "T032000Feb": "借用場地舉辦訓練班的注意事項.md",
+    "SubsidyScheme02_2026Apr_C_ssnlt": "有經濟需要之童軍領袖訓練資助計劃（2026 - 2027）.md",
+    "SubsidyScheme03_2026Apr_C_os": "青年領袖發展計劃（海外活動津貼）（2026 - 2027）.md",
+    "AdmCir302020_LTIFoundationSubsidy_C_Final": "領袖訓練學院基金「進修資助計劃」申請章則及指引.md",
 }
+BY_BASENAME = {}
 
 # ---------- 本地檔案 ----------
 CIRCRE = re.compile(r"第\s*[*_]{0,2}\s*([0-9]{1,3})\s*[\/⁄∕]\s*([0-9]{2,4})\s*[*_]{0,2}\s*號")
@@ -90,6 +92,9 @@ for d in DIRS:
                       "nums": nums, "size": len(txt),
                       "body": norm(txt[:4000])})
 
+for f in files:
+    BY_BASENAME[Path(f["path"]).name] = f["path"]
+
 by_name = {}
 for f in files:
     by_name.setdefault(f["n"], f["path"])
@@ -102,8 +107,8 @@ for f in files:
 
 matched, missing = [], []
 for r in rows:
-    if r["base"] in OVERRIDES and (ROOT / OVERRIDES[r["base"]]).exists():
-        (matched if True else missing).append({**r, "md": OVERRIDES[r["base"]], "how": "對照表"})
+    if r["base"] in OVERRIDES and OVERRIDES[r["base"]] in BY_BASENAME:
+        (matched if True else missing).append({**r, "md": BY_BASENAME[OVERRIDES[r["base"]]], "how": "對照表"})
         continue
     hit = by_name.get(r["n"])
     how = "檔名" if hit else None

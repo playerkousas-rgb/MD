@@ -185,8 +185,8 @@ footer b{color:#9db8ab;font-weight:600}
 var $=function(i){return document.getElementById(i)};
 var LOGS=[],cache=new Map(),index=null,busy=false;
 var pre={p:null,done:0,total:0,notify:null},good=null; /* good = 上次成功的模型，之後直接用 */
-/* 知識庫包含多個目錄：knowledge/ 之外，repo 根目錄下仲有三個原始轉換目錄。 */
-var GH={owner:"playerkousas-rgb",repo:"MD",branch:"main",dir:"knowledge",dirs:["knowledge","政策指引","行政","資助計劃"]};
+/* 全部文件已收納入 knowledge/；dirs 保留成陣列，日後要加目錄只需加一項。 */
+var GH={owner:"playerkousas-rgb",repo:"MD",branch:"main",dir:"knowledge",dirs:["knowledge"]};
 var API_BASE="https://generativelanguage.googleapis.com/v1beta/models/";
 var MODELS=["gemini-2.5-flash","gemini-flash-latest","gemini-2.0-flash"];
 /* Gemini Canvas 執行時自動注入憑證；保持空字串＝不帶 ?key=，改行平台代理認證。

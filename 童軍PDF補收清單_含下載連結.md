@@ -2,7 +2,8 @@
 
 > **已被取代（2026-10-29）：** 這份清單只覆蓋官網「政策／指引」頭幾頁，
 > 而且列出的部分「未見對應 MD」現已補齊。最新的覆蓋率與缺口清單請看
-> **[`tools/coverage/coverage_report.md`](tools/coverage/coverage_report.md)**。
+> **[`tools/coverage/coverage_report.md`](tools/coverage/coverage_report.md)**
+> 及下載清單 **[`tools/coverage/下載清單_20261029.md`](tools/coverage/下載清單_20261029.md)**。
 > 本檔保留作歷史紀錄。
 
 整理日期：2026-10-27。來源為前次官網目錄檢查；本次整理直連，未重新逐份下載驗證所有PDF。官網可能改連結，遇失效請使用附上的官方目錄。
