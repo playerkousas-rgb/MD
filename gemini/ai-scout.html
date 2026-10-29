@@ -293,11 +293,21 @@ function excerptOf(text,toks,idf){
   if(text.length<=SMALL)return {whole:true,parts:null};
   var chunks=[];
   splitPages(text).forEach(function(c){splitBig(c).forEach(function(x){if(x.text.trim())chunks.push(x)})});
+  /* 用「呢個字在該文件出現於幾多頁」做權重：表格頁成日重複「制服／帽／男團員」，
+     但「恤衫／杏色／深資」只在少數頁出現，後者才係答案所在。 */
+  var pf=Object.create(null);toks.forEach(function(t){pf[t]=0});
+  chunks.forEach(function(c){var low=c.text.toLowerCase();toks.forEach(function(t){if(low.indexOf(t)>=0)pf[t]++})});
+  var P=chunks.length||1;
+  function lidf(t){return Math.log((P+1)/((pf[t]||0)+0.5))}
   var scored=[];
   chunks.forEach(function(c,idx){
-    var low=c.text.toLowerCase(),s=0;
-    toks.forEach(function(t){var n=countOcc(low,t);if(n)s+=Math.min(n,5)*(idf[t]||0)});
-    if(s>0)scored.push({i:idx,page:c.page,text:c.text,s:s});
+    var low=c.text.toLowerCase(),s=0,cover=0;
+    toks.forEach(function(t){
+      var n=countOcc(low,t);if(!n)return;
+      s+=Math.min(n,5)*lidf(t);
+      cover+=lidf(t);          /* 覆蓋「幾多個唔同關鍵詞」，唔係同一個字出現幾多次 */
+    });
+    if(s>0)scored.push({i:idx,page:c.page,text:c.text,s:s+cover*2.5});
   });
   if(!scored.length)return {whole:false,parts:[{page:chunks[0]?chunks[0].page:1,text:text.slice(0,6000)}],pages:"?"};
   scored.sort(function(a,b){return b.s-a.s});
@@ -307,7 +317,7 @@ function excerptOf(text,toks,idf){
     if(i<0||i>=chunks.length||seen[i])return;
     seen[i]=1;entries.push({i:i,page:chunks[i].page,text:chunks[i].text,pri:pri});
   }
-  scored.slice(0,3).forEach(function(x,k){add(x.i,k);add(x.i-1,10+k);add(x.i+1,10+k)});
+  scored.slice(0,5).forEach(function(x,k){add(x.i,k);add(x.i-1,10+k);add(x.i+1,10+k)});
   entries.sort(function(a,b){return a.i-b.i});
   var total=0,keep=[],BUDGET=30000;
   entries.forEach(function(x){if(x.pri<10){keep.push(x);total+=x.text.length}});
@@ -327,46 +337,180 @@ function tokens(t){
   return Array.from(out);
 }
 function countOcc(h,n){return h.split(n).length-1}
+/* 口語 → 文件用詞：問「食煙」文件寫「吸煙」、問「飲酒」文件寫「酒精」，唔對照就係零命中 */
+var SYN=[["食煙","吸煙"],["抽煙","吸煙"],["食菸","吸煙"],["吸菸","吸煙"],["煙草","吸煙"],
+         ["飲酒","酒精"],["喝酒","酒精"],["飲啤酒","酒精"],["啤酒","酒精"],["紅酒","酒精"],["烈酒","酒精"],["含酒精","酒精"],
+         ["露營","營地"],["露宿","營地"],["宿營","營地"],["營友","營地"],["營舍","營地"],["營區","營地"],
+         ["場地","營地"],["帳篷","露營"],["泊車","車輛"]];
+function aliasTokens(q){
+  var s=String(q),out=[];
+  SYN.forEach(function(p){ if(s.indexOf(p[0])>=0) out=out.concat(tokens(p[1])) });
+  return out;
+}
+/* ---------- 語義索引：常見問法 → 章節用詞 ＋ 應該優先讀邊份文件 ----------
+   關鍵詞檢索唔識「恤衫」≈「制服上衣」、「露營」≈「營友守則」，所以人手寫對照表。
+   補入嘅詞只佔 0.35 權重（見 retrieve），夠推前相關段落，但唔會蓋過問題本身嘅字。 */
+var SEM=[
+ [/帽|軟帽|硬帽|帽章|白頂帽|帽帶/,["軟帽","硬帽","帽章","白頂帽"],["儀容與制服手冊"]],
+ [/恤衫|上衣|制服顏色|制服係咩色|制服乜色/,["恤衫","杏色","胸袋"],["儀容與制服手冊","童軍基本技能教材手冊"]],
+ [/襪|皮鞋|皮帶|領巾|巾圈|肩章|毛衣/,["襪","皮鞋","皮帶","領巾","肩章"],["儀容與制服手冊"]],
+ [/勳章|獎章|紀念章|勳條|嘉許/,["勳章","獎章","紀念章"],["儀容與制服手冊"]],
+ [/制服號|禮服|晚禮服|餐舞會/,["制服號","晚禮服","餐舞會"],["儀容與制服手冊"]],
+ [/排位|座位|主禮|台上/,["排位次序","主禮嘉賓","座位"],["童軍典禮儀式指引"]],
+ [/步操|口令|步速|立正|稍息|會操/,["步操","口令","開步","立正"],["步操手冊"]],
+ [/進度性獎章|段章|支部徽章/,["進度性獎章","段章"],[]],
+ [/營地|營友|營舍|露營|宿營|場地|借用|收費/,["營友守則","收費","借用"],["營地及場地使用守則"]],
+ [/先鋒工程|三腳架|繩結|紮作|滑輪/,["先鋒工程","三腳架","繩結"],["先鋒工程"]],
+ [/登山|遠足|行山|露宿|海拔/,["登山","遠足","露宿","海拔"],["登山_第三版"]],
+ [/森林舞蹈|歡呼/,["森林舞蹈","歡呼"],["森林舞蹈"]],
+ [/幾歲|年齡|歲可以|歲可以參加/,["年齡"],[]],
+ [/安全|意外|風險|急救/,["安全","意外","急救"],["政策及安全指引"]],
+ [/委任|續任|資格|木章/,["委任","續任","資格","木章"],["行政及領袖訓練"]],
+ [/資助|津貼|撥款/,["資助","津貼"],["資助計劃"]],
+ [/訓練綱要|訓練計劃|綱要/,["訓練綱要","訓練計劃"],[]]
+];
+function semMatch(q){
+  var add=[],files=[],hit=[];
+  SEM.forEach(function(r){
+    if(r[0].test(q)){hit.push(r[0].source);add=add.concat(r[1]);files=files.concat(r[2])}
+  });
+  return {add:add,files:files,hit:hit};
+}
+
+/* 問句屬邊個範疇，就優先讀該目錄：唔加呢層，40 萬字嘅大書一定壓過一兩千字嘅營地守則 */
+var CATS=[["營地|營友|營舍|營區|露營|宿營|場地|借用|燒烤|泳池|射箭場|攀爬|無人機|泊車|離營","09_"],
+          ["制服|帽|徽章|勳章|領巾|肩章|儀容|襪|皮鞋|皮帶","10_"],
+          ["進度性獎章|段章|支部訓練|綱要|小童軍|幼童軍|深資童軍|樂行童軍","02_"]];
+function catDirs(q){
+  var s=String(q),d=[];
+  CATS.forEach(function(c){ if(new RegExp(c[0]).test(s)) d.push(c[1]) });
+  return d;
+}
+/* 文件自報嘅標題：第一個 # 標題，冇就用開頭一句。用嚟做「問句提到文件名」嘅加權。 */
+function docTitle(text){
+  var s=String(text),fm=s.match(/^---\n([\s\S]*?)\n---\n/);
+  if(fm){var tm=fm[1].match(/^title:\s*"?(.*?)"?\s*$/m);if(tm&&tm[1])return tm[1].trim()}
+  var body=s.replace(/^---\n[\s\S]*?\n---\n/,"");
+  var m=body.match(/^#{1,6}\s*(.{1,40})/m);
+  if(m)return m[1].replace(/^#+\s*/,"").trim();
+  return body.slice(0,80).replace(/\s+/g," ");
+}
+/* 全庫切段：短文件整份當一段，長文件按 <!-- p.N --> 切頁後再切 ~2000 字 */
+function chunkList(text){
+  if(text.length<=SMALL)return [{page:0,text:text}];
+  var out=[];
+  splitPages(text).forEach(function(c){splitBig(c).forEach(function(x){if(x.text.trim())out.push(x)})});
+  return out;
+}
+/* 段落級 BM25：以前「先為文件打分、再取前 k 份」，40 萬字嘅書一定壓過一兩千字嘅守則，
+   而書入面正確嘅一頁亦成日入唔到前 5 段。改成逐段評分（有長度正規化），
+   再以「該文件最高分嘅一段」排文件 —— 短文件唔會再被長書淹沒，答案頁會直接被抽中。 */
 async function retrieve(question,k,files){
-  var toks=tokens(question);
+  var toks=tokens(question),TW=Object.create(null);
+  toks.forEach(function(x){TW[x]=1});
+  aliasTokens(question).forEach(function(x){if(!TW[x]){TW[x]=0.7;toks.push(x)}});
+  var sm=semMatch(question);
+  sm.add.forEach(function(w){tokens(w).forEach(function(x){if(!TW[x]){TW[x]=0.35;toks.push(x)}})});
+  if(sm.hit.length)L("語義索引命中 "+sm.hit.length+" 條，補入詞 "+sm.add.join("／"));
   if(!toks.length)return [];
-  var docs=[];
+  var unit=[];
   for(var i=0;i<files.length;i++){
     var f=files[i],text=cache.get(pathOf(f));
     if(text===undefined)continue;
-    docs.push({f:f,text:text,low:text.toLowerCase(),head:text.slice(0,2500).toLowerCase()});
+    chunkList(text).forEach(function(c){
+      unit.push({f:f,page:c.page,text:c.text,low:c.text.toLowerCase(),len:Math.max(c.text.length,80)});
+    });
   }
-  var N=docs.length||1,df=Object.create(null);
-  toks.forEach(function(t){df[t]=0});
-  var counted=docs.map(function(d){
-    var c=Object.create(null);
-    toks.forEach(function(t){var n=countOcc(d.low,t);c[t]=n;if(n)df[t]++});
-    return c;
-  });
-  docs.forEach(function(d,i){
-    var score=0;
+  if(!unit.length)return [];
+  var N=unit.length,avg=0;
+  unit.forEach(function(u){avg+=u.len}); avg=(avg/N)||1;
+  var df=Object.create(null);toks.forEach(function(t){df[t]=0});
+  unit.forEach(function(u){toks.forEach(function(t){if(u.low.indexOf(t)>=0)df[t]++})});
+  var W=Object.create(null);
+  toks.forEach(function(t){W[t]=Math.log(1+(N-df[t]+0.5)/(df[t]+0.5))*(TW[t]||1)});
+  var K1=1.2,B=0.75;
+  unit.forEach(function(u){
+    var s=0,cover=0,hit=0;
     toks.forEach(function(t){
-      var n=counted[i][t];if(!n)return;
-      var idf=Math.log((N+1)/(df[t]+0.5));
-      score+=Math.min(n,5)*idf;
-      if(d.head.indexOf(t)>=0)score+=idf*1.5;
-      if(String(d.f.title||"").toLowerCase().indexOf(t)>=0)score+=idf*2;
+      var n=countOcc(u.low,t);if(!n)return;
+      hit++;cover+=W[t];
+      s+=W[t]*(n*(K1+1))/(n+K1*(1-B+B*u.len/avg));
     });
-    d.score=score;
+    u.hit=hit;u.cover=cover;u.s=hit?(s+cover*0.6):0;   /* 命中越多「唔同」關鍵詞越前 */
   });
-  var idf=Object.create(null);
-  toks.forEach(function(t){idf[t]=Math.log((N+1)/(df[t]+0.5))});
-  return docs.filter(function(d){return d.score>0})
-    .sort(function(a,b){return b.score-a.score})
-    .slice(0,k)
-    .map(function(d){
-      return {f:d.f,sc:Math.round(d.score*10)/10,text:d.text,excerpt:excerptOf(d.text,toks,idf)};
+  var byPath=Object.create(null),order=[];
+  unit.forEach(function(u){
+    var pa=pathOf(u.f);
+    if(!byPath[pa]){byPath[pa]={f:u.f,chunks:[],best:0};order.push(pa)}
+    var e=byPath[pa];
+    if(u.s>e.best)e.best=u.s;
+    e.chunks.push(u);
+  });
+  var docs=order.map(function(pa){return byPath[pa]})
+    .filter(function(d){return d.best>0});
+  var q=String(question);
+  var SECTIONS=["小童軍","幼童軍","深資童軍","樂行童軍","海童軍","空童軍"];
+  docs.forEach(function(d){       /* 問句提到文件名（例如「新領袖手冊第八章」）就加分 */
+    var ti=docTitle(cache.get(pathOf(d.f))||"").toLowerCase(),hit=0;
+    toks.forEach(function(t){if(ti.indexOf(t)>=0)hit++});
+    d.tboost=1+Math.min(hit,2)*0.25;
+    var sboost=sm.files.some(function(f){return pathOf(d.f).indexOf(f)>=0})?1.15:1;
+    /* 問句指名某支部（小／幼／深資／樂行／海／空童軍）：
+       該支部嘅文件加分；明顯屬另一個支部嘅文件扣分——咁「幼童軍進度性獎章」
+       就唔會抽到《深資童軍訓練綱要》。 */
+    var full=cache.get(pathOf(d.f))||"";
+    var label=pathOf(d.f)+" "+docTitle(full)+" "+full.slice(0,600);
+    var want=SECTIONS.filter(function(s){return q.indexOf(s)>=0});
+    var has=SECTIONS.filter(function(s){return label.indexOf(s)>=0});
+    var sct=1;
+    if(want.length&&has.length){
+      var both=want.some(function(s){return has.indexOf(s)>=0});
+      sct=both?1.3:0.72;
+    }
+    d.best=d.best*d.tboost*sboost*sct;
+  });
+  docs.sort(function(a,b){return b.best-a.best});
+  var dirs=catDirs(question);
+  if(dirs.length){
+    var pri=docs.filter(function(d){
+      var pa=pathOf(d.f);
+      return dirs.some(function(x){return pa.indexOf(x)>=0});
     });
+    docs=pri.concat(docs.filter(function(d){return pri.indexOf(d)<0}));
+  }
+  return docs.slice(0,k).map(function(d){
+    if(d.chunks.length===1&&d.chunks[0].page===0){
+      return {f:d.f,sc:Math.round(d.best*10)/10,text:cache.get(pathOf(d.f)),
+              excerpt:{whole:true,parts:null}};
+    }
+    var seq=d.chunks,byScore=seq.slice().sort(function(a,b){return b.s-a.s});
+    /* 每份文件最多抽 6 段、合計 14,000 字：夠覆蓋規條，又唔會霸佔整份 prompt */
+    var picked=[],size=0;
+    for(var bi=0;bi<byScore.length;bi++){
+      var u=byScore[bi];
+      if(picked.length>=4)break;
+      if(picked.length>=2&&size+u.text.length>10000)break;
+      picked.push(u);size+=u.text.length;
+    }
+    var seen={},ps=[];
+    picked.forEach(function(u){
+      var j=seq.indexOf(u);
+      [j-1,j,j+1].forEach(function(q){
+        if(q>=0&&q<seq.length&&!seen[q]){seen[q]=1;ps.push(seq[q])}
+      });
+    });
+    ps.sort(function(a,b){return a.page-b.page});
+    var pages=[];ps.forEach(function(u){if(u.page&&pages.indexOf(u.page)<0)pages.push(u.page)});
+    return {f:d.f,sc:Math.round(d.best*10)/10,text:"",
+            excerpt:{whole:false,parts:ps.map(function(u){return {page:u.page,text:u.text}}),
+                     pages:pages.slice(0,14).join("、")}};
+  });
 }
 
 /* ---------- 呼叫 Gemini：不帶 tools，所以觸不到互聯網搜尋 ---------- */
 var SYSTEM=[
-  "你是香港童軍總會的資料助理。只可以使用使用者提供的文件內容回答，不可以引用互聯網，也不可以用你自己的常識補充。",
+  "你是香港童軍總會的資料助理。只可以使用使用者提供的文件內容回答，不可以引用互聯網，也不可以用你自己的常識補充。"+
+  "但你可以、也應該運用文件內的明文規則去做換算、排序、比較、歸納——即係「文件冇逐字寫出答案，但答案可以由文件推算出嚟」時，要照答，唔好推搪。",
   "輸出必須完全依照以下三段，不要加任何開場白、總結、問候或多餘文字：",
   "【答案】",
   "（一句直接答案，最多 40 字。例如「不可以」或「四個段章及金帶全部改名」。）",
@@ -379,9 +523,29 @@ var SYSTEM=[
   "就算【答案】已經總結，這裡仍然要列出全部具體項目；寧願列多，唔好漏。）",
   "【根據】",
   "（列點，每份引用文件獨立一行，以「- 」開頭，格式：「- 檔名 第 X 頁：關鍵原文一句」；最多列 5 份。）",
-  "規則：文件中找不到答案時，【答案】寫「文件中未提及」，【要點】建議相關文件類別。不要猜測。",
+  "規則一：文件中找不到答案時，【答案】寫「文件中未提及」，【要點】建議相關文件類別。不要猜測。",
+  "規則二：不可以由概括條文推論出某項活動被禁止。例如問「可否飲酒」，而文件只寫「嚴禁違反本港法律的活動，如醉酒鬧事」或「嚴禁擾亂公眾秩序」，"+
+  "那就只可以照抄該條文，並在【答案】寫「文件中未直接禁止（只列明…）」，絕對不可以答「不可以」。同理，「保持安靜」「必須離營」「嚴禁生火」都不等於禁止其他活動。",
+  "規則三：問某個場所（例如某個營地）時，只可以用該場所自己的規則作答；其他場所的規則只可以在【要點】註明「（另一場地）」，不可以當成同一規定。",
+  "規則四：【根據】每一點必須寫出檔名及頁碼，該句必須真的在文件原文出現過；沒有原文就不要寫那一點。",
+  "規則五：文件裡的「次序／排位次序 1–18」係職級先後，唔係座位號。問座位時，座位數以實際出席人數為準，按該次序由中間向外、左右交替排；"+
+  "文件若沒有講缺席／補位如何處理，就要講清楚「4 號係職級序位、實際坐第 X 位」，唔可以把序位當座位照抄。",
+  "規則六：文件只在一欄（例如「地域舉辦的活動」）列出嘅職級，唔可以直接套用到另一欄（「區舉辦的活動」）；要講明係按同級對稱推論。",
+  "規則七（准推演）：如果答案可以用文件內的明文規則一步推算出嚟（例如：固定排位次序＋實際出席人數 → 座位；年齡表 → 某歲屬邊個支部；制服編號表 → 某場合穿邊套），就要直接計出嚟答，"+
+  "並在該點後面加「（按第 X 頁規則推算）」。可以推，但只可以用文件內的資料推，唔准引入文件以外嘅常識、法例或習慣。",
+  "規則八：如果文件只列舉咗部分情況（例如只列 18 個職級但實際只有 6 人出席），要分開寫清楚「文件原文」同「套用到今次情況嘅結果」，兩者唔可以混成一句。",
   "若引用的檔案標示了 OCR，而答案涉及日期、金額或通告編號，在【要點】最後加一句提醒核對原文。",
   "一律用香港繁體中文。全文（三段合計）不超過 1000 字，寧短勿長。"
+].join("\n");
+
+/* ---------- 第一步：核對員。只問「邊份文件有冇直接答到」，唔准推理 ─---------
+   目的：模型冇能力判斷「手上資料答唔答到」，所以先要佢逐份指出原文；冇原文就講冇。 */
+var CHECK_SYSTEM=[
+  "你是文件核對員，只做一件事：判斷以下文件節錄有冇『直接』回答問題的原文。",
+  "輸出規則：每行一條，格式「檔名｜頁碼｜原文一句（照抄，最多 40 字）｜能答」。",
+  "只可以照抄節錄內出現過的句子，不可以改寫、不可以推論、不可以補充常識。",
+  "如果沒有任何一條可以回答問題（例如只提到相關字眼但冇講到答案），就只輸出「沒有」。",
+  "最多 6 行，不要任何解釋、前言、總結。"
 ].join("\n");
 
 /* 額度 = 天花板，唔係內容長度嘅控制器。按模型給到最大，實際長度由提示詞控制。
@@ -559,7 +723,7 @@ $("askBtn").onclick=async function(){
   if(!q||busy)return;
   if(!index){box.innerHTML='<div class="err">知識庫未載入，請開右上角 ⚙ 看「診斷紀錄」。</div>';return}
   busy=true;$("askBtn").disabled=true;lsSet("sk_lastq",q);
-  var k=parseInt(lsGet("sk_k"),10)||8,hits=null;
+  var k=parseInt(lsGet("sk_k"),10)||10,hits=null;
   try{
     var total=index.files.length;
     if(cache.size<total){
@@ -572,7 +736,7 @@ $("askBtn").onclick=async function(){
     hits=await retrieve(q,k,index.files);
     if(!hits.length||hits[0].sc<=0){box.innerHTML='<div class="err">文件中找不到相關內容。</div>';return}
     box.innerHTML=spin("正在閱讀 "+hits.length+" 份文件並作答…");
-    var PER_DOC=30000,CTX_MAX=90000,used=0;
+    var PER_DOC=30000,CTX_MAX=120000,used=0;
     var ctx=hits.map(function(h){
       if(used>=CTX_MAX)return "";
       var mk=h.f.pages_ocr?"（注意：此檔有 "+h.f.pages_ocr+"/"+h.f.pages+" 頁經 OCR，可能有錯字）":"";
@@ -587,7 +751,36 @@ $("askBtn").onclick=async function(){
       used+=piece.length;
       return piece;
     }).filter(Boolean).join("\n\n---\n\n");
-    var payload="以下是官方文件內容：\n\n"+ctx+"\n\n問題："+q;
+    /* 第一步：核對員逐段指出原文；第二步才作答（可大幅減少「拿錯料硬答」） */
+    var check="";
+    try{
+      box.innerHTML=spin("第一步：核對邊份文件真係有原文答到…");
+      var ev=hits.slice(0,6).map(function(h){
+        var body;
+        if(h.excerpt&&!h.excerpt.whole){
+          body=h.excerpt.parts.slice(0,3).map(function(p){
+            return "【第 "+(p.page||"?")+" 頁】"+String(p.text).slice(0,700);
+          }).join("\n");
+        }else{
+          body=String(h.text).slice(0,900);
+        }
+        return "### "+h.f.md_file+"\n"+body;
+      }).join("\n\n---\n\n");
+      var r1=await askGemini(CHECK_SYSTEM,"問題："+q+"\n\n以下是文件節錄：\n\n"+ev);
+      check=String(r1.text||"").slice(0,1200);
+      L("自我檢查："+check.replace(/\n/g," / ").slice(0,140));
+    }catch(e1){
+      L("自我檢查失敗（略過，直接作答）："+e1.message);
+    }
+    box.innerHTML=spin("第二步：作答（已納入查證結果）…");
+    var top=hits[0]?hits[0].sc:0;
+    var conf=top>=25?"高":(top>=12?"中":"低");
+    L("檢索信心 "+conf+"（最高分 "+top+"），入選 "+hits.length+" 份");
+    var payload="以下是官方文件內容（檢索信心："+conf+"）。"+
+      (conf==="低"?"「低」代表呢批文件可能同問題無關：除非搵到直接對應嘅原文，否則【答案】要寫「文件中未提及」。":"")+
+      (check?("\n\n【第一步查證結果（核對員原文摘錄）】\n"+check+
+        "\n作答規則：核對員指「沒有」或所有條目都只是提到相關字眼而冇答案時，【答案】必須寫「文件中未提及」，【要點】改為建議可查閱的文件類別。"):"")+
+      "\n\n"+ctx+"\n\n問題："+q;
     var out=await askGemini(SYSTEM,payload);
     showAnswer(out.text,hits,out.model,out.truncated);
   }catch(e){
