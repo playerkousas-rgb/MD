@@ -26,7 +26,7 @@
 ## 三、注意事項
 
 1. 213 份之中，79 份有完整頁碼標記（`<!-- p.N -->`）與頁數；其餘 134 份是 2026-10-29 收納入庫的原始轉換版，
-   **沒有頁碼標記**，10 份開頭有 OCR 雜訊（front matter 標 `quality: ocr-noisy`）。
+   **沒有頁碼標記**，3 份開頭有 OCR 雜訊（front matter 標 `quality: ocr-noisy`）。
 2. 檔案清單（含通告編號、日期、字數、雜訊標記）：`tools/coverage/knowledge_manifest.csv`。
 3. 官網連結含內部編號，容易失效，本報告不逐項列出；下載時用目錄頁按檔名搜尋：
 
