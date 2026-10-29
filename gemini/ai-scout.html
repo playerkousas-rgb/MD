@@ -185,7 +185,8 @@ footer b{color:#9db8ab;font-weight:600}
 var $=function(i){return document.getElementById(i)};
 var LOGS=[],cache=new Map(),index=null,busy=false;
 var pre={p:null,done:0,total:0,notify:null},good=null; /* good = 上次成功的模型，之後直接用 */
-var GH={owner:"playerkousas-rgb",repo:"MD",branch:"main",dir:"knowledge"};
+/* 知識庫包含多個目錄：knowledge/ 之外，repo 根目錄下仲有三個原始轉換目錄。 */
+var GH={owner:"playerkousas-rgb",repo:"MD",branch:"main",dir:"knowledge",dirs:["knowledge","政策指引","行政","資助計劃"]};
 var API_BASE="https://generativelanguage.googleapis.com/v1beta/models/";
 var MODELS=["gemini-2.5-flash","gemini-flash-latest","gemini-2.0-flash"];
 /* Gemini Canvas 執行時自動注入憑證；保持空字串＝不帶 ?key=，改行平台代理認證。
@@ -216,10 +217,11 @@ function resolveKey(){
 }
 
 /* ---------- 抓 GitHub 上的 Markdown ---------- */
+function pathOf(f){return norm(f.md_path||(GH.dir+"/"+f.md_file))}
 async function getText(f){
-  var path=norm(f.md_file),hit=cache.get(path);
+  var path=pathOf(f),hit=cache.get(path);
   if(hit!==undefined)return hit;
-  var r=await fetch(rawUrl(GH.dir+"/"+path),{cache:"no-store"});
+  var r=await fetch(rawUrl(path),{cache:"no-store"});
   if(!r.ok)throw Error("HTTP "+r.status+" "+path);
   var t=await r.text();cache.set(path,t);fillMeta(t,f);L("fetch "+path+"（"+t.length+" 字）");return t;
 }
@@ -235,7 +237,7 @@ function fillMeta(text,f){
   var sf=g("source_file");if(sf&&!f.title)f.title=sf.replace(/\.(pdf|docx|pptx|xlsx|doc)$/i,"");
 }
 async function ensure(files,onProgress){
-  var todo=files.filter(function(f){return cache.get(norm(f.md_file))===undefined});
+  var todo=files.filter(function(f){return cache.get(pathOf(f))===undefined});
   var total=todo.length,done=0,B=8;
   for(var i=0;i<total;i+=B){
     await Promise.all(todo.slice(i,i+B).map(async function(f){
@@ -330,7 +332,7 @@ async function retrieve(question,k,files){
   if(!toks.length)return [];
   var docs=[];
   for(var i=0;i<files.length;i++){
-    var f=files[i],text=cache.get(norm(f.md_file));
+    var f=files[i],text=cache.get(pathOf(f));
     if(text===undefined)continue;
     docs.push({f:f,text:text,low:text.toLowerCase(),head:text.slice(0,2500).toLowerCase()});
   }
@@ -504,11 +506,16 @@ async function loadList(){
       (j.tree||[]).forEach(function(t){
         if(t.type!=="blob")return;
         var p=String(t.path||"");
-        if(p.indexOf(GH.dir+"/")!==0||!/\.md$/i.test(p))return;
-        var rel=p.slice(GH.dir.length+1),parts=rel.split("/");
+        if(!/\.md$/i.test(p))return;
+        var top=p.split("/")[0];
+        if(top===p)return;                       /* 根目錄的 README／說明，不當文件 */
+        if(GH.dirs.indexOf(top)<0)return;        /* 只讀白名單目錄 */
+        var rel=p.slice(top.length+1),parts=rel.split("/");
         files.push({
+          md_path:p,
           md_file:rel,
-          category:parts.length>1?parts[0]:"(未分類)",
+          top:top,
+          category:parts.length>1?parts[0]:top,
           title:parts[parts.length-1].replace(/\.md$/i,""),
           chars:t.size||0,
           pages_ocr:undefined
@@ -576,7 +583,7 @@ $("askBtn").onclick=async function(){
       }else{
         body=h.text.slice(0,PER_DOC);
       }
-      var piece="### 檔案："+h.f.md_file+" "+mk+"\n"+body;
+      var piece="### 檔案："+(h.f.top?h.f.top+"/":"")+h.f.md_file+" "+mk+"\n"+body;
       used+=piece.length;
       return piece;
     }).filter(Boolean).join("\n\n---\n\n");
@@ -644,7 +651,7 @@ function showAnswer(raw,hits,model,truncated){
   var files=hits.map(function(h){
     var t=h.f.pages_ocr?'<span class="badge">OCR</span>':"";
     var pg=(h.excerpt&&!h.excerpt.whole&&h.excerpt.pages)?" · 第 "+h.excerpt.pages+" 頁":"";
-    return "<div><b>"+esc(h.f.md_file)+"</b>"+t+pg+" 相關度 "+h.sc+"</div>";
+    return "<div><b>"+esc((h.f.top?h.f.top+"/":"")+h.f.md_file)+"</b>"+t+pg+" 相關度 "+h.sc+"</div>";
   }).join("");
   html+='<details class="blk"><summary>根據<span class="cnt">'+hits.length+' 份</span></summary><div class="pt">'+
     (p.src?listify(p.src)+"<hr>":"")+'<div class="fl">'+files+"</div></div></details>";
@@ -697,7 +704,7 @@ function renderDocs(){
     return !q||((f.md_file+" "+(f.title||"")+" "+f.category)||"").toLowerCase().indexOf(q)>=0;
   }).forEach(function(f){
     var d=document.createElement("div");d.className="doc";
-    d.textContent=String(f.md_file).split("/").pop().replace(/\.md$/,"")+"  ·  "+f.category;
+    d.textContent=String(f.md_file).split("/").pop().replace(/\.md$/,"")+"  ·  "+(f.top||f.category||"");
     d.onclick=async function(){
       box.querySelectorAll(".doc.on").forEach(function(x){x.classList.remove("on")});
       d.classList.add("on");
