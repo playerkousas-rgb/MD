@@ -14,6 +14,17 @@ LABELS = cc.LABELS
 tot = {c: sum(1 for r in rows if r["cat"] == c) for c in "345"}
 miss = {c: sum(1 for r in missing if r["cat"] == c) for c in "345"}
 
+# ---------- 檔案來源統計（唔寫死數字） ----------
+ROOT = cc.ROOT
+TOTAL = len(files)
+WEB = LEGACY = NOISY = PAGED = 0
+for _f in files:
+    _t = (ROOT / _f["path"]).read_text(encoding="utf-8", errors="ignore")
+    if "web-html" in _t: WEB += 1
+    if "legacy-raw" in _t: LEGACY += 1
+    if "ocr-noisy" in _t: NOISY += 1
+    if "<!-- p." in _t: PAGED += 1
+
 L = []
 A = L.append
 A("# 官網通告覆蓋率報告")
@@ -46,8 +57,11 @@ else:
 A("")
 A("## 三、注意事項")
 A("")
-A("1. 213 份之中，79 份有完整頁碼標記（`<!-- p.N -->`）與頁數；其餘 134 份是 2026-10-29 收納入庫的原始轉換版，")
-A("   **沒有頁碼標記**，10 份開頭有 OCR 雜訊（front matter 標 `quality: ocr-noisy`）。")
+A("1. %d 份之中，%d 份有完整頁碼標記（`<!-- p.N -->`）與頁數；%d 份是 2026-10-29 收納入庫的原始轉換版，"
+  % (TOTAL, PAGED, LEGACY))
+A("   **沒有頁碼標記**，%d 份開頭有 OCR 雜訊（front matter 標 `quality: ocr-noisy`）；另有 %d 份由官網 HTML 直接抓取"
+  % (NOISY, WEB))
+A("   （`pipeline: web-html`，帶 `source_url`／`retrieved_date`），有 `<!-- p.N -->` 標記但無 PDF 頁數。")
 A("2. 檔案清單（含通告編號、日期、字數、雜訊標記）：`tools/coverage/knowledge_manifest.csv`。")
 A("3. 官網連結含內部編號，容易失效，本報告不逐項列出；下載時用目錄頁按檔名搜尋：")
 A("")
