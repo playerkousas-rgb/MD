@@ -16,7 +16,7 @@ gemini/
 
 單一 HTML 檔,貼進 Gemini Canvas 或直接開都可以。特點:
 
-- **自動發現文件**:用 GitHub trees API 列出 `knowledge/` 內所有 `.md`(共 250 份),
+- **自動發現文件**:用 GitHub trees API 列出 `knowledge/` 內所有 `.md`(共 249 份),
   新檔案只要放進 `knowledge/` 就自動出現,不需要改索引、不需要重新 build。
 - **不需要輸入 API key**:Canvas 會用登入者自己的 Google 額度。
 - **三段式輸出**:大字答案 / 可摺疊的「具體要點」(自動轉列點) / 可摺疊的「根據」(檔名 + 頁數)。
