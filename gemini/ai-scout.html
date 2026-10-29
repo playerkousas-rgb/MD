@@ -356,50 +356,106 @@ function catDirs(q){
   CATS.forEach(function(c){ if(new RegExp(c[0]).test(s)) d.push(c[1]) });
   return d;
 }
+/* 文件自報嘅標題：第一個 # 標題，冇就用開頭一句。用嚟做「問句提到文件名」嘅加權。 */
+function docTitle(text){
+  var s=String(text),fm=s.match(/^---\n([\s\S]*?)\n---\n/);
+  if(fm){var tm=fm[1].match(/^title:\s*"?(.*?)"?\s*$/m);if(tm&&tm[1])return tm[1].trim()}
+  var body=s.replace(/^---\n[\s\S]*?\n---\n/,"");
+  var m=body.match(/^#{1,6}\s*(.{1,40})/m);
+  if(m)return m[1].replace(/^#+\s*/,"").trim();
+  return body.slice(0,80).replace(/\s+/g," ");
+}
+/* 全庫切段：短文件整份當一段，長文件按 <!-- p.N --> 切頁後再切 ~2000 字 */
+function chunkList(text){
+  if(text.length<=SMALL)return [{page:0,text:text}];
+  var out=[];
+  splitPages(text).forEach(function(c){splitBig(c).forEach(function(x){if(x.text.trim())out.push(x)})});
+  return out;
+}
+/* 段落級 BM25：以前「先為文件打分、再取前 k 份」，40 萬字嘅書一定壓過一兩千字嘅守則，
+   而書入面正確嘅一頁亦成日入唔到前 5 段。改成逐段評分（有長度正規化），
+   再以「該文件最高分嘅一段」排文件 —— 短文件唔會再被長書淹沒，答案頁會直接被抽中。 */
 async function retrieve(question,k,files){
   var toks=tokens(question);
   aliasTokens(question).forEach(function(x){if(toks.indexOf(x)<0)toks.push(x)});
   if(!toks.length)return [];
-  var docs=[];
+  var unit=[];
   for(var i=0;i<files.length;i++){
     var f=files[i],text=cache.get(pathOf(f));
     if(text===undefined)continue;
-    docs.push({f:f,text:text,low:text.toLowerCase(),head:text.slice(0,2500).toLowerCase()});
-  }
-  var N=docs.length||1,df=Object.create(null);
-  toks.forEach(function(t){df[t]=0});
-  var counted=docs.map(function(d){
-    var c=Object.create(null);
-    toks.forEach(function(t){var n=countOcc(d.low,t);c[t]=n;if(n)df[t]++});
-    return c;
-  });
-  docs.forEach(function(d,i){
-    var score=0;
-    toks.forEach(function(t){
-      var n=counted[i][t];if(!n)return;
-      var idf=Math.log((N+1)/(df[t]+0.5));
-      score+=Math.min(n,5)*idf;
-      if(d.head.indexOf(t)>=0)score+=idf*1.5;
-      if(String(d.f.title||"").toLowerCase().indexOf(t)>=0)score+=idf*2;
+    chunkList(text).forEach(function(c){
+      unit.push({f:f,page:c.page,text:c.text,low:c.text.toLowerCase(),len:Math.max(c.text.length,80)});
     });
-    d.score=score;
+  }
+  if(!unit.length)return [];
+  var N=unit.length,avg=0;
+  unit.forEach(function(u){avg+=u.len}); avg=(avg/N)||1;
+  var df=Object.create(null);toks.forEach(function(t){df[t]=0});
+  unit.forEach(function(u){toks.forEach(function(t){if(u.low.indexOf(t)>=0)df[t]++})});
+  var W=Object.create(null);
+  toks.forEach(function(t){W[t]=Math.log(1+(N-df[t]+0.5)/(df[t]+0.5))});
+  var K1=1.2,B=0.75;
+  unit.forEach(function(u){
+    var s=0,cover=0,hit=0;
+    toks.forEach(function(t){
+      var n=countOcc(u.low,t);if(!n)return;
+      hit++;cover+=W[t];
+      s+=W[t]*(n*(K1+1))/(n+K1*(1-B+B*u.len/avg));
+    });
+    u.hit=hit;u.cover=cover;u.s=hit?(s+cover*0.6):0;   /* 命中越多「唔同」關鍵詞越前 */
   });
-  var idf=Object.create(null);
-  toks.forEach(function(t){idf[t]=Math.log((N+1)/(df[t]+0.5))});
-  var pool=docs.filter(function(d){return d.score>0})
-    .sort(function(a,b){return b.score-a.score});
+  var byPath=Object.create(null),order=[];
+  unit.forEach(function(u){
+    var pa=pathOf(u.f);
+    if(!byPath[pa]){byPath[pa]={f:u.f,chunks:[],best:0};order.push(pa)}
+    var e=byPath[pa];
+    if(u.s>e.best)e.best=u.s;
+    e.chunks.push(u);
+  });
+  var docs=order.map(function(pa){return byPath[pa]})
+    .filter(function(d){return d.best>0});
+  docs.forEach(function(d){       /* 問句提到文件名（例如「新領袖手冊第八章」）就加分 */
+    var ti=docTitle(cache.get(pathOf(d.f))||"").toLowerCase(),hit=0;
+    toks.forEach(function(t){if(ti.indexOf(t)>=0)hit++});
+    d.tboost=1+Math.min(hit,2)*0.25;
+    d.best=d.best*d.tboost;
+  });
+  docs.sort(function(a,b){return b.best-a.best});
   var dirs=catDirs(question);
   if(dirs.length){
-    var pri=pool.filter(function(d){
+    var pri=docs.filter(function(d){
       var pa=pathOf(d.f);
       return dirs.some(function(x){return pa.indexOf(x)>=0});
-    }).slice(0,k);
-    var rest=pool.filter(function(d){return pri.indexOf(d)<0});
-    pool=pri.concat(rest);
-  }
-  return pool.slice(0,k).map(function(d){
-      return {f:d.f,sc:Math.round(d.score*10)/10,text:d.text,excerpt:excerptOf(d.text,toks,idf)};
     });
+    docs=pri.concat(docs.filter(function(d){return pri.indexOf(d)<0}));
+  }
+  return docs.slice(0,k).map(function(d){
+    if(d.chunks.length===1&&d.chunks[0].page===0){
+      return {f:d.f,sc:Math.round(d.best*10)/10,text:cache.get(pathOf(d.f)),
+              excerpt:{whole:true,parts:null}};
+    }
+    var seq=d.chunks,byScore=seq.slice().sort(function(a,b){return b.s-a.s});
+    /* 每份文件最多抽 6 段、合計 14,000 字：夠覆蓋規條，又唔會霸佔整份 prompt */
+    var picked=[],size=0;
+    for(var bi=0;bi<byScore.length;bi++){
+      var u=byScore[bi];
+      if(picked.length>=4)break;
+      if(picked.length>=2&&size+u.text.length>10000)break;
+      picked.push(u);size+=u.text.length;
+    }
+    var seen={},ps=[];
+    picked.forEach(function(u){
+      var j=seq.indexOf(u);
+      [j-1,j,j+1].forEach(function(q){
+        if(q>=0&&q<seq.length&&!seen[q]){seen[q]=1;ps.push(seq[q])}
+      });
+    });
+    ps.sort(function(a,b){return a.page-b.page});
+    var pages=[];ps.forEach(function(u){if(u.page&&pages.indexOf(u.page)<0)pages.push(u.page)});
+    return {f:d.f,sc:Math.round(d.best*10)/10,text:"",
+            excerpt:{whole:false,parts:ps.map(function(u){return {page:u.page,text:u.text}}),
+                     pages:pages.slice(0,14).join("、")}};
+  });
 }
 
 /* ---------- 呼叫 Gemini：不帶 tools，所以觸不到互聯網搜尋 ---------- */
@@ -608,7 +664,7 @@ $("askBtn").onclick=async function(){
   if(!q||busy)return;
   if(!index){box.innerHTML='<div class="err">知識庫未載入，請開右上角 ⚙ 看「診斷紀錄」。</div>';return}
   busy=true;$("askBtn").disabled=true;lsSet("sk_lastq",q);
-  var k=parseInt(lsGet("sk_k"),10)||12,hits=null;
+  var k=parseInt(lsGet("sk_k"),10)||10,hits=null;
   try{
     var total=index.files.length;
     if(cache.size<total){
@@ -636,7 +692,12 @@ $("askBtn").onclick=async function(){
       used+=piece.length;
       return piece;
     }).filter(Boolean).join("\n\n---\n\n");
-    var payload="以下是官方文件內容：\n\n"+ctx+"\n\n問題："+q;
+    var top=hits[0]?hits[0].sc:0;
+    var conf=top>=25?"高":(top>=12?"中":"低");
+    L("檢索信心 "+conf+"（最高分 "+top+"），入選 "+hits.length+" 份");
+    var payload="以下是官方文件內容（檢索信心："+conf+"）。"+
+      (conf==="低"?"「低」代表呢批文件可能同問題無關：除非搵到直接對應嘅原文，否則【答案】要寫「文件中未提及」。":"")+
+      "\n\n"+ctx+"\n\n問題："+q;
     var out=await askGemini(SYSTEM,payload);
     showAnswer(out.text,hits,out.model,out.truncated);
   }catch(e){
