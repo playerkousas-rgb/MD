@@ -347,6 +347,36 @@ function aliasTokens(q){
   SYN.forEach(function(p){ if(s.indexOf(p[0])>=0) out=out.concat(tokens(p[1])) });
   return out;
 }
+/* ---------- 語義索引：常見問法 → 章節用詞 ＋ 應該優先讀邊份文件 ----------
+   關鍵詞檢索唔識「恤衫」≈「制服上衣」、「露營」≈「營友守則」，所以人手寫對照表。
+   補入嘅詞只佔 0.35 權重（見 retrieve），夠推前相關段落，但唔會蓋過問題本身嘅字。 */
+var SEM=[
+ [/帽|軟帽|硬帽|帽章|白頂帽|帽帶/,["軟帽","硬帽","帽章","白頂帽"],["儀容與制服手冊"]],
+ [/恤衫|上衣|制服顏色|制服係咩色|制服乜色/,["恤衫","杏色","胸袋"],["儀容與制服手冊","童軍基本技能教材手冊"]],
+ [/襪|皮鞋|皮帶|領巾|巾圈|肩章|毛衣/,["襪","皮鞋","皮帶","領巾","肩章"],["儀容與制服手冊"]],
+ [/勳章|獎章|紀念章|勳條|嘉許/,["勳章","獎章","紀念章"],["儀容與制服手冊"]],
+ [/制服號|禮服|晚禮服|餐舞會/,["制服號","晚禮服","餐舞會"],["儀容與制服手冊"]],
+ [/排位|座位|主禮|台上/,["排位次序","主禮嘉賓","座位"],["童軍典禮儀式指引"]],
+ [/步操|口令|步速|立正|稍息|會操/,["步操","口令","開步","立正"],["步操手冊"]],
+ [/進度性獎章|段章|支部徽章/,["進度性獎章","段章"],[]],
+ [/營地|營友|營舍|露營|宿營|場地|借用|收費/,["營友守則","收費","借用"],["營地及場地使用守則"]],
+ [/先鋒工程|三腳架|繩結|紮作|滑輪/,["先鋒工程","三腳架","繩結"],["先鋒工程"]],
+ [/登山|遠足|行山|露宿|海拔/,["登山","遠足","露宿","海拔"],["登山_第三版"]],
+ [/森林舞蹈|歡呼/,["森林舞蹈","歡呼"],["森林舞蹈"]],
+ [/幾歲|年齡|歲可以|歲可以參加/,["年齡"],[]],
+ [/安全|意外|風險|急救/,["安全","意外","急救"],["政策及安全指引"]],
+ [/委任|續任|資格|木章/,["委任","續任","資格","木章"],["行政及領袖訓練"]],
+ [/資助|津貼|撥款/,["資助","津貼"],["資助計劃"]],
+ [/訓練綱要|訓練計劃|綱要/,["訓練綱要","訓練計劃"],[]]
+];
+function semMatch(q){
+  var add=[],files=[],hit=[];
+  SEM.forEach(function(r){
+    if(r[0].test(q)){hit.push(r[0].source);add=add.concat(r[1]);files=files.concat(r[2])}
+  });
+  return {add:add,files:files,hit:hit};
+}
+
 /* 問句屬邊個範疇，就優先讀該目錄：唔加呢層，40 萬字嘅大書一定壓過一兩千字嘅營地守則 */
 var CATS=[["營地|營友|營舍|營區|露營|宿營|場地|借用|燒烤|泳池|射箭場|攀爬|無人機|泊車|離營","09_"],
           ["制服|帽|徽章|勳章|領巾|肩章|儀容|襪|皮鞋|皮帶","10_"],
@@ -376,8 +406,12 @@ function chunkList(text){
    而書入面正確嘅一頁亦成日入唔到前 5 段。改成逐段評分（有長度正規化），
    再以「該文件最高分嘅一段」排文件 —— 短文件唔會再被長書淹沒，答案頁會直接被抽中。 */
 async function retrieve(question,k,files){
-  var toks=tokens(question);
-  aliasTokens(question).forEach(function(x){if(toks.indexOf(x)<0)toks.push(x)});
+  var toks=tokens(question),TW=Object.create(null);
+  toks.forEach(function(x){TW[x]=1});
+  aliasTokens(question).forEach(function(x){if(!TW[x]){TW[x]=0.7;toks.push(x)}});
+  var sm=semMatch(question);
+  sm.add.forEach(function(w){tokens(w).forEach(function(x){if(!TW[x]){TW[x]=0.35;toks.push(x)}})});
+  if(sm.hit.length)L("語義索引命中 "+sm.hit.length+" 條，補入詞 "+sm.add.join("／"));
   if(!toks.length)return [];
   var unit=[];
   for(var i=0;i<files.length;i++){
@@ -393,7 +427,7 @@ async function retrieve(question,k,files){
   var df=Object.create(null);toks.forEach(function(t){df[t]=0});
   unit.forEach(function(u){toks.forEach(function(t){if(u.low.indexOf(t)>=0)df[t]++})});
   var W=Object.create(null);
-  toks.forEach(function(t){W[t]=Math.log(1+(N-df[t]+0.5)/(df[t]+0.5))});
+  toks.forEach(function(t){W[t]=Math.log(1+(N-df[t]+0.5)/(df[t]+0.5))*(TW[t]||1)});
   var K1=1.2,B=0.75;
   unit.forEach(function(u){
     var s=0,cover=0,hit=0;
@@ -414,11 +448,26 @@ async function retrieve(question,k,files){
   });
   var docs=order.map(function(pa){return byPath[pa]})
     .filter(function(d){return d.best>0});
+  var q=String(question);
+  var SECTIONS=["小童軍","幼童軍","深資童軍","樂行童軍","海童軍","空童軍"];
   docs.forEach(function(d){       /* 問句提到文件名（例如「新領袖手冊第八章」）就加分 */
     var ti=docTitle(cache.get(pathOf(d.f))||"").toLowerCase(),hit=0;
     toks.forEach(function(t){if(ti.indexOf(t)>=0)hit++});
     d.tboost=1+Math.min(hit,2)*0.25;
-    d.best=d.best*d.tboost;
+    var sboost=sm.files.some(function(f){return pathOf(d.f).indexOf(f)>=0})?1.15:1;
+    /* 問句指名某支部（小／幼／深資／樂行／海／空童軍）：
+       該支部嘅文件加分；明顯屬另一個支部嘅文件扣分——咁「幼童軍進度性獎章」
+       就唔會抽到《深資童軍訓練綱要》。 */
+    var full=cache.get(pathOf(d.f))||"";
+    var label=pathOf(d.f)+" "+docTitle(full)+" "+full.slice(0,600);
+    var want=SECTIONS.filter(function(s){return q.indexOf(s)>=0});
+    var has=SECTIONS.filter(function(s){return label.indexOf(s)>=0});
+    var sct=1;
+    if(want.length&&has.length){
+      var both=want.some(function(s){return has.indexOf(s)>=0});
+      sct=both?1.3:0.72;
+    }
+    d.best=d.best*d.tboost*sboost*sct;
   });
   docs.sort(function(a,b){return b.best-a.best});
   var dirs=catDirs(question);
@@ -487,6 +536,16 @@ var SYSTEM=[
   "規則八：如果文件只列舉咗部分情況（例如只列 18 個職級但實際只有 6 人出席），要分開寫清楚「文件原文」同「套用到今次情況嘅結果」，兩者唔可以混成一句。",
   "若引用的檔案標示了 OCR，而答案涉及日期、金額或通告編號，在【要點】最後加一句提醒核對原文。",
   "一律用香港繁體中文。全文（三段合計）不超過 1000 字，寧短勿長。"
+].join("\n");
+
+/* ---------- 第一步：核對員。只問「邊份文件有冇直接答到」，唔准推理 ─---------
+   目的：模型冇能力判斷「手上資料答唔答到」，所以先要佢逐份指出原文；冇原文就講冇。 */
+var CHECK_SYSTEM=[
+  "你是文件核對員，只做一件事：判斷以下文件節錄有冇『直接』回答問題的原文。",
+  "輸出規則：每行一條，格式「檔名｜頁碼｜原文一句（照抄，最多 40 字）｜能答」。",
+  "只可以照抄節錄內出現過的句子，不可以改寫、不可以推論、不可以補充常識。",
+  "如果沒有任何一條可以回答問題（例如只提到相關字眼但冇講到答案），就只輸出「沒有」。",
+  "最多 6 行，不要任何解釋、前言、總結。"
 ].join("\n");
 
 /* 額度 = 天花板，唔係內容長度嘅控制器。按模型給到最大，實際長度由提示詞控制。
@@ -692,11 +751,35 @@ $("askBtn").onclick=async function(){
       used+=piece.length;
       return piece;
     }).filter(Boolean).join("\n\n---\n\n");
+    /* 第一步：核對員逐段指出原文；第二步才作答（可大幅減少「拿錯料硬答」） */
+    var check="";
+    try{
+      box.innerHTML=spin("第一步：核對邊份文件真係有原文答到…");
+      var ev=hits.slice(0,6).map(function(h){
+        var body;
+        if(h.excerpt&&!h.excerpt.whole){
+          body=h.excerpt.parts.slice(0,3).map(function(p){
+            return "【第 "+(p.page||"?")+" 頁】"+String(p.text).slice(0,700);
+          }).join("\n");
+        }else{
+          body=String(h.text).slice(0,900);
+        }
+        return "### "+h.f.md_file+"\n"+body;
+      }).join("\n\n---\n\n");
+      var r1=await askGemini(CHECK_SYSTEM,"問題："+q+"\n\n以下是文件節錄：\n\n"+ev);
+      check=String(r1.text||"").slice(0,1200);
+      L("自我檢查："+check.replace(/\n/g," / ").slice(0,140));
+    }catch(e1){
+      L("自我檢查失敗（略過，直接作答）："+e1.message);
+    }
+    box.innerHTML=spin("第二步：作答（已納入查證結果）…");
     var top=hits[0]?hits[0].sc:0;
     var conf=top>=25?"高":(top>=12?"中":"低");
     L("檢索信心 "+conf+"（最高分 "+top+"），入選 "+hits.length+" 份");
     var payload="以下是官方文件內容（檢索信心："+conf+"）。"+
       (conf==="低"?"「低」代表呢批文件可能同問題無關：除非搵到直接對應嘅原文，否則【答案】要寫「文件中未提及」。":"")+
+      (check?("\n\n【第一步查證結果（核對員原文摘錄）】\n"+check+
+        "\n作答規則：核對員指「沒有」或所有條目都只是提到相關字眼而冇答案時，【答案】必須寫「文件中未提及」，【要點】改為建議可查閱的文件類別。"):"")+
       "\n\n"+ctx+"\n\n問題："+q;
     var out=await askGemini(SYSTEM,payload);
     showAnswer(out.text,hits,out.model,out.truncated);
