@@ -5,11 +5,27 @@
 
 ```
 gemini/
-├── 童軍問答-單檔.html   # ★ 實測用這個:79 份文件全部內嵌,雙擊即開
+├── ai-scout.html        # ★ AI SCOUT 介面(GitHub 直讀 .md,自動發現新檔案)
+├── 童軍問答-單檔.html   # 79 份文件全部內嵌,雙擊即開,離線可用
 ├── index.html           # 需要 http server 的版本(知識庫另外載入)
 ├── README.md
 └── (tools/build_gemini_single.py 產生單檔版)
 ```
+
+## AI SCOUT（`ai-scout.html`）
+
+單一 HTML 檔,貼進 Gemini Canvas 或直接開都可以。特點:
+
+- **自動發現文件**:用 GitHub trees API 列出 `knowledge/` 內所有 `.md`(共 261 份),
+  新檔案只要放進 `knowledge/` 就自動出現,不需要改索引、不需要重新 build。
+- **不需要輸入 API key**:Canvas 會用登入者自己的 Google 額度。
+- **三段式輸出**:大字答案 / 可摺疊的「具體要點」(自動轉列點) / 可摺疊的「根據」(檔名 + 頁數)。
+- **長文件不會截斷**:`excerptOf()` 抽最相關段落,再按頁碼合併前後文。
+- **輸出上限處理**:`maxOutputTokens` 按模型給到最大(2.5-flash 65536),
+  實際長度由提示詞的字數規矩控制;真的撞到上限會自動續寫。
+- 文件清單與診斷紀錄收在右上角 ⚙ 內,預設隱藏。
+
+© Scout System
 
 ## 〇、直接雙擊就能用(推薦)
 

@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#06110c">
+<meta name="description" content="AI SCOUT 智能童軍助手 — 香港童軍總會官方文件問答">
+<title>AI SCOUT · 智能童軍助手</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%236ee7b7'/%3E%3Cstop offset='1' stop-color='%230ea472'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='%23091a12'/%3E%3Ccircle cx='32' cy='32' r='19' fill='none' stroke='url(%23g)' stroke-width='2' opacity='.75'/%3E%3Cpath d='M32 12 36.6 27.4 52 32 36.6 36.6 32 52 27.4 36.6 12 32 27.4 27.4Z' fill='url(%23g)'/%3E%3C/svg%3E">
+<style>:root{color-scheme:dark;--ink:#06110c;--ink2:#0a1a13;--panel:rgba(13,30,22,.78);--panel2:#0a1811;--line:#1e3a2b;--line2:#2e5741;--tx:#eef7f2;--mu:#8ba79a;--mu2:#657f73;--g1:#6ee7b7;--g2:#0ea472;--gold:#e8c981;--bad:#ff9d94;--r:20px;--shadow:0 18px 44px -18px rgba(0,0,0,.85),0 2px 8px rgba(0,0,0,.35);}
+*{box-sizing:border-box}
+::selection{background:rgba(110,231,183,.28);color:#fff}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100%;color:var(--tx);font:15.5px/1.7 system-ui,-apple-system,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;background:var(--ink);-webkit-font-smoothing:antialiased;}
+body::before,body::after{content:"";position:fixed;z-index:-2;pointer-events:none;border-radius:50%;filter:blur(90px)}
+body::before{width:720px;height:720px;left:-180px;top:-320px;background:radial-gradient(circle,rgba(14,164,114,.34),transparent 66%)}
+body::after{width:640px;height:640px;right:-220px;top:-140px;background:radial-gradient(circle,rgba(232,201,129,.13),transparent 64%)}
+.grid-bg{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.5;background-image:linear-gradient(rgba(110,231,183,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(110,231,183,.05) 1px,transparent 1px);background-size:52px 52px;mask-image:radial-gradient(circle at 50% 0%,#000 0%,transparent 72%);-webkit-mask-image:radial-gradient(circle at 50% 0%,#000 0%,transparent 72%);}
+.wrap{max-width:860px;margin:0 auto;padding:0 16px 40px}
+.top{position:sticky;top:0;z-index:40;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);background:linear-gradient(180deg,rgba(6,17,12,.92),rgba(6,17,12,.62));border-bottom:1px solid rgba(30,58,43,.9);}
+.topin{max-width:860px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:13px}
+.logo{width:46px;height:46px;flex:0 0 46px;border-radius:15px;display:grid;place-items:center;background:radial-gradient(120% 120% at 30% 10%,#14372a,#08160f 70%);border:1px solid var(--line2);box-shadow:0 8px 22px -10px rgba(14,164,114,.9),inset 0 1px 0 rgba(255,255,255,.07);}
+.logo svg{width:27px;height:27px;display:block}
+.brand h1{margin:0;font-size:20px;letter-spacing:1.6px;line-height:1.1;font-weight:800;background:linear-gradient(96deg,#ffffff,#a7f3d0 62%,#e8c981);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.brand p{margin:2px 0 0;font-size:12px;color:var(--mu);letter-spacing:1px}
+.flex1{flex:1}
+.iconbtn{width:40px;height:40px;padding:0;border-radius:13px;display:grid;place-items:center;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--mu);cursor:pointer;font-size:16px;transition:.18s;}
+.iconbtn:hover{color:var(--g1);border-color:var(--line2);transform:translateY(-1px)}
+.iconbtn.on{color:#04140d;background:linear-gradient(180deg,var(--g1),var(--g2));border-color:transparent}
+.hero{padding:26px 2px 4px}
+.hero .kicker{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;letter-spacing:2.6px;color:var(--g1);text-transform:uppercase;margin-bottom:10px;}
+.hero .kicker i{width:22px;height:1px;background:linear-gradient(90deg,var(--g1),transparent);display:block}
+.hero h2{margin:0 0 6px;font-size:27px;line-height:1.25;letter-spacing:.3px}
+.hero p{margin:0;color:var(--mu);font-size:14px}
+.panel{position:relative;margin:18px 0;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:18px;}
+.panel::after{content:"";position:absolute;inset:0;border-radius:var(--r);pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.06),transparent 42%);mask-image:linear-gradient(#000,transparent 46%);-webkit-mask-image:linear-gradient(#000,transparent 46%);}
+label.lbl{display:block;font-size:12px;letter-spacing:1.8px;color:var(--mu2);margin-bottom:9px}
+textarea,input{width:100%;background:var(--panel2);color:var(--tx);border:1px solid var(--line);border-radius:14px;padding:14px 16px;font:inherit;outline:none;transition:border-color .18s,box-shadow .18s,background .18s;}
+textarea::placeholder,input::placeholder{color:#5d766a}
+textarea:focus,input:focus{border-color:var(--g2);background:#08150f;box-shadow:0 0 0 4px rgba(14,164,114,.15)}
+#q{min-height:104px;resize:vertical;font-size:16.5px;line-height:1.7}
+.row{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.cta{position:relative;display:inline-flex;align-items:center;gap:9px;background:linear-gradient(180deg,#3ddc9a,#0ba571);color:#03150d;border:0;border-radius:14px;padding:13px 28px;font-weight:800;letter-spacing:.6px;font-size:15px;box-shadow:0 12px 26px -12px rgba(61,220,154,.9),inset 0 1px 0 rgba(255,255,255,.4);transition:transform .1s,filter .18s,box-shadow .18s;}
+.cta:hover{filter:brightness(1.06);box-shadow:0 16px 32px -12px rgba(61,220,154,1),inset 0 1px 0 rgba(255,255,255,.45)}
+.cta:active{transform:translateY(1px) scale(.995)}
+.cta:disabled{filter:grayscale(.45) brightness(.85);cursor:wait;box-shadow:none}
+.cta svg{width:16px;height:16px}
+.ghost{background:none;border:1px solid transparent;color:var(--mu);border-radius:14px;padding:12px 15px;cursor:pointer;transition:.16s;font:inherit;}
+.ghost:hover{color:var(--tx);border-color:var(--line)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.chip{background:rgba(255,255,255,.03);border:1px solid var(--line);color:#b6cdc0;border-radius:999px;padding:7px 14px;font-size:12.5px;cursor:pointer;transition:.16s;user-select:none;}
+.chip:hover{border-color:var(--g2);color:var(--g1);background:rgba(14,164,114,.13);transform:translateY(-1px)}
+#answer{min-height:70px}
+.answrap{animation:up .34s cubic-bezier(.2,.8,.25,1)}
+@keyframes up{from{opacity:0;transform:translateY(9px)}
+to{opacity:1;transform:none}
+}
+.tagline{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.pill{font-size:11px;letter-spacing:2px;color:#04170e;font-weight:800;background:linear-gradient(180deg,var(--g1),var(--g2));border-radius:999px;padding:3px 11px;}
+.pill.gold{background:linear-gradient(180deg,#f2dfae,var(--gold));color:#241a05}
+#ans{white-space:pre-wrap;font-size:21px;font-weight:750;line-height:1.6;padding:18px 20px;border-radius:16px;background:linear-gradient(135deg,rgba(14,164,114,.20),rgba(14,164,114,.04) 62%);border:1px solid rgba(46,87,65,.95);border-left:4px solid var(--g1);box-shadow:0 10px 30px -22px rgba(110,231,183,.9);}
+details.blk{background:var(--panel2);border:1px solid var(--line);border-radius:16px;margin-top:11px;overflow:hidden;transition:border-color .18s;}
+details.blk:hover{border-color:var(--line2)}
+details.blk>summary{padding:13px 16px;font-size:13.5px;font-weight:700;color:#c6e5d6;list-style:none;display:flex;align-items:center;gap:10px;cursor:pointer;}
+details.blk>summary::-webkit-details-marker{display:none}
+details.blk>summary::before{content:"";width:7px;height:7px;flex:0 0 7px;border-right:2px solid var(--g2);border-bottom:2px solid var(--g2);transform:rotate(-45deg);transition:transform .18s;}
+details.blk[open]>summary::before{transform:rotate(45deg)}
+details.blk>summary:hover{color:var(--g1)}
+.cnt{margin-left:auto;font-size:11px;font-weight:700;color:#9fd7bd;background:rgba(14,164,114,.16);border:1px solid rgba(46,87,65,.9);border-radius:999px;padding:1px 9px;}
+details.blk .pt{padding:2px 18px 16px 18px;font-size:14.2px;line-height:1.8}
+details.blk .pt .pl{white-space:pre-wrap}
+details.blk ul.li{margin:0;padding-left:1.1em;list-style:none}
+details.blk ul.li li{position:relative;margin:8px 0;padding-left:16px}
+details.blk ul.li li::before{content:"";position:absolute;left:0;top:.72em;width:6px;height:6px;border-radius:2px;background:linear-gradient(135deg,var(--g1),var(--g2));transform:rotate(45deg);}
+details.blk hr{border:0;border-top:1px solid var(--line);margin:14px 0}
+details.blk .fl{font-size:12.5px;color:var(--mu);line-height:1.95;margin-top:6px}
+details.blk .fl>div{padding:3px 0}
+.badge{display:inline-block;background:rgba(232,201,129,.16);color:var(--gold);border:1px solid rgba(232,201,129,.35);border-radius:6px;padding:1px 6px;font-size:10.5px;vertical-align:1px;margin-left:4px}
+.empty{color:var(--mu2);font-size:14px;display:flex;align-items:center;gap:10px;padding:6px 2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--g2);box-shadow:0 0 0 4px rgba(14,164,114,.16)}
+.loading{display:flex;align-items:center;color:var(--mu);font-size:14px}
+.sp{width:15px;height:15px;flex:0 0 15px;margin-right:9px;border-radius:50%;border:2px solid rgba(139,167,154,.28);border-top-color:var(--g1);animation:r .8s linear infinite;}
+@keyframes r{to{transform:rotate(360deg)}
+}
+.warn{color:var(--gold);font-size:12.5px;margin-top:11px}
+.err{color:var(--bad);font-size:13.5px;white-space:pre-wrap}
+.mu{color:var(--mu)}
+.src{margin-top:12px;font-size:12.5px;color:var(--mu)}
+.src b{color:var(--tx)}
+#tools[hidden]{display:none}
+#tools{animation:up .22s ease-out}
+.toolcard{background:rgba(8,21,15,.86);border:1px dashed var(--line2);border-radius:var(--r);padding:15px;box-shadow:var(--shadow);}
+.toolcard>details{margin:0}
+.toolcard>details+details{margin-top:12px;border-top:1px solid var(--line);padding-top:12px}
+.toolcard summary{cursor:pointer;color:#b7cfc1;font-size:13px;font-weight:700;letter-spacing:.4px}
+.toolcard summary:hover{color:var(--g1)}
+.doc{padding:8px 11px;border-radius:10px;cursor:pointer;font-size:12.5px;border:1px solid transparent;transition:.14s}
+.doc:hover{background:#0f2419;border-color:var(--line)}
+.doc.on{background:rgba(14,164,114,.16);border-color:var(--line2)}
+pre.md{background:#050e0a;border:1px solid var(--line);border-radius:12px;padding:13px;max-height:250px;overflow:auto;white-space:pre-wrap;word-break:break-word;font:12px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace;margin:9px 0 0;color:#bcd4c8;}
+.log{background:#040c08;border:1px solid #142a1f;border-radius:12px;padding:11px;font:11.5px/1.65 ui-monospace,monospace;max-height:170px;overflow:auto;white-space:pre-wrap;color:#799888;}
+*::-webkit-scrollbar{width:9px;height:9px}
+*::-webkit-scrollbar-thumb{background:#1e3a2b;border-radius:9px}
+*::-webkit-scrollbar-thumb:hover{background:#2e5741}
+*::-webkit-scrollbar-track{background:transparent}
+footer{margin:34px 0 0;padding:18px 0 8px;border-top:1px solid rgba(30,58,43,.7);text-align:center;color:var(--mu2);font-size:11.5px;letter-spacing:1.4px;}
+footer b{color:#9db8ab;font-weight:600}
+@media(max-width:560px){.hero h2{font-size:22px}
+#ans{font-size:18.5px;padding:15px 16px}
+.cta{padding:12px 22px}
+.panel{padding:15px;border-radius:17px}
+.brand h1{font-size:18px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}
+}
+</style></head><body>
+<div class="grid-bg"></div>
+
+<div class="top"><div class="topin">
+  <div class="logo" aria-hidden="true">
+    <svg viewBox="0 0 64 64">
+      <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#6ee7b7"/><stop offset="1" stop-color="#0ea472"/>
+      </linearGradient></defs>
+      <circle cx="32" cy="32" r="20" fill="none" stroke="url(#lg)" stroke-width="2.2" opacity=".7"/>
+      <path d="M32 11 36.6 27.4 53 32 36.6 36.6 32 53 27.4 36.6 11 32 27.4 27.4Z" fill="url(#lg)"/>
+    </svg>
+  </div>
+  <div class="brand">
+    <h1>AI SCOUT</h1>
+    <p>智能童軍助手</p>
+  </div>
+  <div class="flex1"></div>
+  <button class="iconbtn" id="gear" title="文件清單／診斷紀錄" aria-label="工具">⚙</button>
+</div></div>
+
+<div class="wrap">
+
+  <section class="hero">
+    <div class="kicker"><i></i>HONG KONG SCOUTS · DOCUMENT AI</div>
+    <h2>問一句，直接拿到答案。</h2>
+    <p>答案只取自知識庫內的官方文件，並附上出處頁數。</p>
+  </section>
+
+  <section class="panel">
+    <label class="lbl" for="q">你的問題</label>
+    <textarea id="q" placeholder="例如：14 歲應該考邊個進度性獎章？"></textarea>
+    <div class="row">
+      <button class="cta" id="askBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+        問
+      </button>
+      <button class="ghost" id="clearBtn">清除</button>
+    </div>
+    <div class="chips">
+      <span class="chip">14 歲應該考邊個進度性獎章?</span>
+      <span class="chip">深資童軍第十一版改了甚麼段章?</span>
+      <span class="chip">旅長同副團長可以同時委任嗎?</span>
+    </div>
+  </section>
+
+  <section class="panel" id="outCard">
+    <div id="answer"><span class="empty"><span class="dot"></span>輸入問題，然後按「問」。</span></div>
+  </section>
+
+  <div id="tools" hidden>
+    <div class="toolcard">
+      <details>
+        <summary id="docHead">文件清單</summary>
+        <input id="filter" placeholder="篩選：標題／分類／檔名" style="margin-top:11px">
+        <div id="docs" style="max-height:240px;overflow:auto;margin-top:9px"></div>
+        <pre class="md" id="preview">選一份文件看原文。</pre>
+      </details>
+      <details>
+        <summary>診斷紀錄</summary>
+        <div class="log" id="log" style="margin-top:11px"></div>
+        <p class="warn" id="note"></p>
+      </details>
+    </div>
+  </div>
+
+  <footer>© Scout System · <b>AI SCOUT</b> 智能童軍助手</footer>
+</div>
+
+<script>
+(function(){"use strict";
+var $=function(i){return document.getElementById(i)};
+var LOGS=[],cache=new Map(),index=null,busy=false;
+var pre={p:null,done:0,total:0,notify:null},good=null; /* good = 上次成功的模型，之後直接用 */
+/* 全部文件已收納入 knowledge/；dirs 保留成陣列，日後要加目錄只需加一項。 */
+var GH={owner:"playerkousas-rgb",repo:"MD",branch:"main",dir:"knowledge",dirs:["knowledge"]};
+var API_BASE="https://generativelanguage.googleapis.com/v1beta/models/";
+var MODELS=["gemini-2.5-flash","gemini-flash-latest","gemini-2.0-flash"];
+/* Gemini Canvas 執行時自動注入憑證；保持空字串＝不帶 ?key=，改行平台代理認證。
+   切勿硬編碼明文 key。 */
+var API_KEY="";
+
+function L(m){LOGS.push(new Date().toISOString().slice(11,19)+"  "+m);if(LOGS.length>200)LOGS.shift();var el=$("log");if(el)el.textContent=LOGS.join("\n")}
+function lsGet(k){try{return localStorage.getItem(k)||""}catch(e){return ""}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+function rawUrl(p){
+  var b="https://raw.githubusercontent.com/"+[GH.owner,GH.repo,GH.branch].map(encodeURIComponent).join("/")+"/";
+  return p?b+p.split("/").map(encodeURIComponent).join("/"):b;
+}
+function norm(p){return String(p||"").replace(/\\/g,"/")}
+function setCount(t){var c=$("count");if(c)c.textContent=t}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function spin(t){return '<div class="loading"><span class="sp"></span>'+t+"</div>"}
+function tag(err,o){o=o||{};for(var k in o)err[k]=o[k];return err}
+
+/* ---------- API key：Canvas 自動注入的各種位置（正常情況下一個都搵唔到，就用平台代理） ---------- */
+function cleanKey(v){return (typeof v==="string"&&v.trim().length>=20&&!/YOUR_?API|PASTE|PLACEHOLDER|EXAMPLE/i.test(v))?v.trim():""}
+function resolveKey(){
+  var cands=[API_KEY,window.GEMINI_API_KEY,window.__GEMINI_API_KEY__,window.__API_KEY__,window.apiKey,lsGet("sk_key")];
+  for(var i=0;i<cands.length;i++){var k=cleanKey(cands[i]);if(k)return k}
+  try{var ks=Object.keys(window);for(var j=0;j<ks.length;j++){var v;try{v=window[ks[j]]}catch(e){continue}if(typeof v==="string"&&/^AIza[0-9A-Za-z_\-]{30,}$/.test(v.trim()))return v.trim()}}catch(e){}
+  try{var ms=document.querySelectorAll("meta[content]");for(var n=0;n<ms.length;n++){var c=(ms[n].content||"").trim();if(/^AIza[0-9A-Za-z_\-]{30,}$/.test(c))return c}}catch(e){}
+  return "";
+}
+
+/* ---------- 抓 GitHub 上的 Markdown ---------- */
+function pathOf(f){return norm(f.md_path||(GH.dir+"/"+f.md_file))}
+async function getText(f){
+  var path=pathOf(f),hit=cache.get(path);
+  if(hit!==undefined)return hit;
+  var r=await fetch(rawUrl(path),{cache:"no-store"});
+  if(!r.ok)throw Error("HTTP "+r.status+" "+path);
+  var t=await r.text();cache.set(path,t);fillMeta(t,f);L("fetch "+path+"（"+t.length+" 字）");return t;
+}
+/* 由 .md 本身的 front matter 補齊頁數／OCR 頁數，唔靠索引 */
+function fillMeta(text,f){
+  var m=/^---\r?\n([\s\S]*?)\r?\n---/.exec(text);
+  if(!m)return;
+  var body=m[1];
+  var g=function(k){var r=new RegExp("^"+k+":[ \t]*(.+)$","m").exec(body);return r?r[1].trim().replace(/^"|"$/g,""):null};
+  var pg=g("pages");if(pg&&!f.pages)f.pages=parseInt(pg,10)||null;
+  var po=g("pages_ocr");if(po!==null&&f.pages_ocr===undefined)f.pages_ocr=parseInt(po,10)||0;
+  var sc=g("source_category");if(sc&&(!f.category||f.category==="(未分類)"))f.category=sc;
+  var sf=g("source_file");if(sf&&!f.title)f.title=sf.replace(/\.(pdf|docx|pptx|xlsx|doc)$/i,"");
+}
+async function ensure(files,onProgress){
+  var todo=files.filter(function(f){return cache.get(pathOf(f))===undefined});
+  var total=todo.length,done=0,B=8;
+  for(var i=0;i<total;i+=B){
+    await Promise.all(todo.slice(i,i+B).map(async function(f){
+      try{await getText(f)}catch(e){L("skip "+norm(f.md_file)+" "+e.message)}
+      done++;
+    }));
+    if(onProgress)onProgress(done,total);
+  }
+  return total;
+}
+
+/* 背景預載只做一次；第一次提問會等埋同一個 promise，避免重複下載 */
+function startPreload(){
+  if(pre.p)return pre.p;
+  pre.total=index.files.length;
+  pre.p=ensure(index.files,function(d,t){
+    pre.done=d;
+    if(pre.notify){try{pre.notify(d,t)}catch(e){}}
+    if(d===t){
+      var chars=0;cache.forEach(function(v){chars+=v.length});
+      setCount(index.files.length+" 份文件 · "+Math.round(chars/10000)+" 萬字");
+      L("背景預載完成 "+cache.size+"/"+index.files.length+"，共 "+chars+" 字");
+    }
+  });
+  return pre.p;
+}
+
+/* ---------- 長文件：抽最相關段落，唔再只送頭 16000 字 ---------- */
+var SMALL=30000;                 /* 短過呢個字數就整份送出（唔怕慢） */
+function splitPages(text){
+  var out=[],re=/<!--\s*p\.(\d+)([^>]*?)-->/g,m,start=0,page=0;
+  while((m=re.exec(text))){
+    if(m.index>start)out.push({page:page,text:text.slice(start,m.index)});
+    page=parseInt(m[1],10)||0;start=re.lastIndex;
+  }
+  if(start<text.length)out.push({page:page,text:text.slice(start)});
+  return out;
+}
+function splitBig(c){
+  if(c.text.length<=2600)return [c];
+  var parts=[],t=c.text,i=0,size=2000;
+  while(i<t.length){
+    var rest=t.slice(i),x=rest.slice(0,size);
+    if(rest.length>size){
+      var cut=x.lastIndexOf("\n");
+      if(cut>size*0.5)x=x.slice(0,cut);
+    }
+    parts.push({page:c.page,text:x});i+=x.length;
+  }
+  return parts;
+}
+function excerptOf(text,toks,idf){
+  if(text.length<=SMALL)return {whole:true,parts:null};
+  var chunks=[];
+  splitPages(text).forEach(function(c){splitBig(c).forEach(function(x){if(x.text.trim())chunks.push(x)})});
+  var scored=[];
+  chunks.forEach(function(c,idx){
+    var low=c.text.toLowerCase(),s=0;
+    toks.forEach(function(t){var n=countOcc(low,t);if(n)s+=Math.min(n,5)*(idf[t]||0)});
+    if(s>0)scored.push({i:idx,page:c.page,text:c.text,s:s});
+  });
+  if(!scored.length)return {whole:false,parts:[{page:chunks[0]?chunks[0].page:1,text:text.slice(0,6000)}],pages:"?"};
+  scored.sort(function(a,b){return b.s-a.s});
+  /* 首 3 段最相關，之後連前後相鄰段落一齊要（規條常常跨頁） */
+  var entries=[],seen={};
+  function add(i,pri){
+    if(i<0||i>=chunks.length||seen[i])return;
+    seen[i]=1;entries.push({i:i,page:chunks[i].page,text:chunks[i].text,pri:pri});
+  }
+  scored.slice(0,3).forEach(function(x,k){add(x.i,k);add(x.i-1,10+k);add(x.i+1,10+k)});
+  entries.sort(function(a,b){return a.i-b.i});
+  var total=0,keep=[],BUDGET=30000;
+  entries.forEach(function(x){if(x.pri<10){keep.push(x);total+=x.text.length}});
+  entries.forEach(function(x){if(x.pri>=10&&total+x.text.length<=BUDGET){keep.push(x);total+=x.text.length}});
+  keep.sort(function(a,b){return a.i-b.i});
+  var ps=[];
+  keep.forEach(function(x){if(x.page&&ps.indexOf(x.page)<0)ps.push(x.page)});
+  return {whole:false,parts:keep.map(function(x){return {page:x.page,text:x.text}}),pages:ps.slice(0,8).join("、")};
+}
+
+/* ---------- 檢索：全程在本機做，問句不會外傳 ---------- */
+function tokens(t){
+  var out=new Set(),low=String(t).toLowerCase();
+  (low.match(/[a-z0-9]{2,}/g)||[]).forEach(function(w){out.add(w)});
+  var cjk=low.replace(/[^\u4e00-\u9fa5]+/g," ").split(/\s+/).filter(Boolean);
+  cjk.forEach(function(seg){for(var i=0;i<seg.length-1;i++)out.add(seg.slice(i,i+2))});
+  return Array.from(out);
+}
+function countOcc(h,n){return h.split(n).length-1}
+async function retrieve(question,k,files){
+  var toks=tokens(question);
+  if(!toks.length)return [];
+  var docs=[];
+  for(var i=0;i<files.length;i++){
+    var f=files[i],text=cache.get(pathOf(f));
+    if(text===undefined)continue;
+    docs.push({f:f,text:text,low:text.toLowerCase(),head:text.slice(0,2500).toLowerCase()});
+  }
+  var N=docs.length||1,df=Object.create(null);
+  toks.forEach(function(t){df[t]=0});
+  var counted=docs.map(function(d){
+    var c=Object.create(null);
+    toks.forEach(function(t){var n=countOcc(d.low,t);c[t]=n;if(n)df[t]++});
+    return c;
+  });
+  docs.forEach(function(d,i){
+    var score=0;
+    toks.forEach(function(t){
+      var n=counted[i][t];if(!n)return;
+      var idf=Math.log((N+1)/(df[t]+0.5));
+      score+=Math.min(n,5)*idf;
+      if(d.head.indexOf(t)>=0)score+=idf*1.5;
+      if(String(d.f.title||"").toLowerCase().indexOf(t)>=0)score+=idf*2;
+    });
+    d.score=score;
+  });
+  var idf=Object.create(null);
+  toks.forEach(function(t){idf[t]=Math.log((N+1)/(df[t]+0.5))});
+  return docs.filter(function(d){return d.score>0})
+    .sort(function(a,b){return b.score-a.score})
+    .slice(0,k)
+    .map(function(d){
+      return {f:d.f,sc:Math.round(d.score*10)/10,text:d.text,excerpt:excerptOf(d.text,toks,idf)};
+    });
+}
+
+/* ---------- 呼叫 Gemini：不帶 tools，所以觸不到互聯網搜尋 ---------- */
+var SYSTEM=[
+  "你是香港童軍總會的資料助理。只可以使用使用者提供的文件內容回答，不可以引用互聯網，也不可以用你自己的常識補充。",
+  "輸出必須完全依照以下三段，不要加任何開場白、總結、問候或多餘文字：",
+  "【答案】",
+  "（一句直接答案，最多 40 字。例如「不可以」或「四個段章及金帶全部改名」。）",
+  "【要點】",
+  "（一定要用列點，每一點獨立一行，以「- 」開頭；點數不限，文件有幾多項就列幾多項，最少 3 點，多到 20 點都冇問題。",
+  "每一點講一件事，最多 70 字；要點整段以 800 字為上限。寧願多列幾點、每點寫短，唔好長篇大論。",
+  "絕對不可以寫成一大段文字，也不可以把幾個項目塞在同一點。",
+  "必須寫出文件裡的具體名稱、數字、日期、條件；如果有「舊名 → 新名」，要逐項寫明。",
+  "文件有對照表或清單時，要逐項列出，絕對不可以只寫「多個」「部分」「等」「有所調整」這類含糊字眼。",
+  "就算【答案】已經總結，這裡仍然要列出全部具體項目；寧願列多，唔好漏。）",
+  "【根據】",
+  "（列點，每份引用文件獨立一行，以「- 」開頭，格式：「- 檔名 第 X 頁：關鍵原文一句」；最多列 5 份。）",
+  "規則：文件中找不到答案時，【答案】寫「文件中未提及」，【要點】建議相關文件類別。不要猜測。",
+  "若引用的檔案標示了 OCR，而答案涉及日期、金額或通告編號，在【要點】最後加一句提醒核對原文。",
+  "一律用香港繁體中文。全文（三段合計）不超過 1000 字，寧短勿長。"
+].join("\n");
+
+/* 額度 = 天花板，唔係內容長度嘅控制器。按模型給到最大，實際長度由提示詞控制。
+   關 thinking 只係為咗快啲出答案（唔係為省額度）。 */
+function maxOutFor(model){
+  if(/gemini-2\.5-/i.test(model)||/flash-latest/i.test(model))return 65536;
+  return 8192;
+}
+var MAX_CONT=2;
+function postOnce(model,body){
+  return (async function(){
+    var ctrl=new AbortController(),tm=setTimeout(function(){ctrl.abort()},150000);
+    var url=API_BASE+encodeURIComponent(model)+":generateContent";
+    var key=resolveKey();
+    if(key)url+="?key="+encodeURIComponent(key);
+    var res;
+    try{
+      res=await fetch(url,{method:"POST",credentials:"include",
+        headers:{"Content-Type":"application/json"},signal:ctrl.signal,body:JSON.stringify(body)});
+    }catch(e){
+      if(e&&e.name==="AbortError")throw tag(Error("Gemini 超過 150 秒未回應（可能是 Canvas 代理或模型端等待）。"),{soft:true});
+      throw tag(Error("Gemini 網絡請求失敗："+((e&&e.message)||e)),{net:true});
+    }finally{clearTimeout(tm)}
+    var data=await res.json().catch(function(){return{}});
+    if(!res.ok){
+      var msg=(data.error&&data.error.message)||("HTTP "+res.status);
+      throw tag(Error(msg),{
+        status:res.status,
+        auth:res.status===401||res.status===403||/api key|credential|permission|unauthor|oauth|login/i.test(msg),
+        nosuch:res.status===404||/model.*(not found|not exist|not supported|unsupported|invalid|deprecated)/i.test(msg)
+      });
+    }
+    var cand=(data.candidates||[])[0]||{};
+    var text=((cand.content&&cand.content.parts)||[]).map(function(p){return p.text||""}).join("").trim();
+    var fin=cand.finishReason||"";
+    if(!text){
+      if(fin==="MAX_TOKENS")throw tag(Error("Gemini 撞到輸出上限但冇內容（已加大額度）。"),{soft:true});
+      throw tag(Error("Gemini 沒有回傳內容"+(fin?"（"+fin+"）":"")),{soft:true});
+    }
+    return {text:text,finish:fin};
+  })();
+}
+async function callOnce(model,system,contents){
+  var think=/2\.5-flash/i.test(model);   /* 只有 2.5-flash 系列支援 thinkingBudget:0 */
+  var cap=maxOutFor(model);
+  for(var a=0;a<3;a++){
+    var body={systemInstruction:{parts:[{text:system}]},contents:contents,
+      generationConfig:{temperature:0.1,maxOutputTokens:cap}};
+    if(think)body.generationConfig.thinkingConfig={thinkingBudget:0};
+    try{return await postOnce(model,body)}
+    catch(e){
+      if(e.status!==400)throw e;
+      if(think&&/think/i.test(e.message)){think=false;continue}
+      if(cap>8192&&/output|token|max/i.test(e.message)){cap=8192;continue}  /* 模型唔收咁大，降一級 */
+      throw e;
+    }
+  }
+}
+/* 接住續寫：去掉重複部分，避免同一句出現兩次 */
+function joinText(a,b){
+  a=String(a||"");b=String(b||"").replace(/^\s+/,"");
+  if(!a)return b;
+  if(!b)return a;
+  var n=Math.min(a.length,b.length,400);
+  for(var i=n;i>6;i--){if(a.slice(-i)===b.slice(0,i))return a+b.slice(i)}
+  if(a.indexOf(b.slice(0,Math.min(40,b.length)))>=0)return a; /* 整個重寫過 */
+  return a+b;
+}
+/* 半句斷尾的樣子：最後一個字係標點／開括號，或者【要點】開咗但【根據】未出現 */
+function looksCut(t){
+  var s=String(t||"").replace(/\s+$/,"");
+  if(!s)return false;
+  if(/[、，,：:．.；;（(「『【《\-—]$/.test(s))return true;
+  if(s.indexOf("【要點】")>=0&&s.indexOf("【根據】")<0)return true;
+  return false;
+}
+var CONT_ASK="你上一次嘅輸出被截斷咗。請由中斷位置直接接住續寫，唔好重複已寫過嘅字，唔好重新開頭，唔好加任何說明，只輸出續寫嘅內容。";
+async function askGemini(system,user){
+  var log=[],last=null;
+  var list=good?[good].concat(MODELS.filter(function(x){return x!==good})):MODELS.slice();
+  for(var i=0;i<list.length;i++){
+    var m=list[i];
+    try{
+      var contents=[{role:"user",parts:[{text:user}]}];
+      var r=await callOnce(m,system,contents);
+      var text=r.text,fin=r.finish,cont=0;
+      while((fin==="MAX_TOKENS"||looksCut(text))&&cont<MAX_CONT){
+        cont++;
+        L("偵測到截斷，續寫第 "+cont+" 次（"+m+"）");
+        contents=contents.concat([
+          {role:"model",parts:[{text:text}]},
+          {role:"user",parts:[{text:CONT_ASK}]}
+        ]);
+        var r2=await callOnce(m,system,contents);
+        if(!r2.text)break;
+        text=joinText(text,r2.text);fin=r2.finish;
+      }
+      good=m;
+      L("Gemini OK ← "+m+(cont?"（含 "+cont+" 次續寫）":"")+" finish="+(fin||"?"));
+      return {model:m,text:text,truncated:(fin==="MAX_TOKENS"||looksCut(text))};
+    }catch(e){
+      last=e;log.push(m+"："+e.message);L("Gemini 失敗 ← "+m+"："+e.message);
+      if(e.auth)break;
+      if(!(e.nosuch||e.status===400))break;
+    }
+  }
+  var err=Error(log.join(" ｜ ")||"Gemini 沒有回應");
+  err.auth=!!(last&&last.auth);err.net=!!(last&&last.net);
+  throw err;
+}
+
+/* ---------- 文件清單：優先問 GitHub「目錄內有咩 .md」，所以新檔案唔使改索引 ---------- */
+var TREE_URL="https://api.github.com/repos/"+GH.owner+"/"+GH.repo+"/git/trees/"+GH.branch+"?recursive=1";
+function treeCacheGet(){try{var raw=localStorage.getItem("sk_tree");if(!raw)return null;var o=JSON.parse(raw);return (o&&o.f&&o.f.length)?o.f:null}catch(e){return null}}
+function treeCacheSet(f){try{localStorage.setItem("sk_tree",JSON.stringify({t:Date.now(),f:f}))}catch(e){}}
+async function loadList(){
+  try{
+    var r=await fetch(TREE_URL,{headers:{Accept:"application/vnd.github+json"},cache:"no-store"});
+    L("GitHub 清單 HTTP "+r.status);
+    if(r.ok){
+      var j=await r.json(),files=[];
+      (j.tree||[]).forEach(function(t){
+        if(t.type!=="blob")return;
+        var p=String(t.path||"");
+        if(!/\.md$/i.test(p))return;
+        var top=p.split("/")[0];
+        if(top===p)return;                       /* 根目錄的 README／說明，不當文件 */
+        if(GH.dirs.indexOf(top)<0)return;        /* 只讀白名單目錄 */
+        var rel=p.slice(top.length+1),parts=rel.split("/");
+        files.push({
+          md_path:p,
+          md_file:rel,
+          top:top,
+          category:parts.length>1?parts[0]:top,
+          title:parts[parts.length-1].replace(/\.md$/i,""),
+          chars:t.size||0,
+          pages_ocr:undefined
+        });
+      });
+      if(files.length){treeCacheSet(files);L("用 GitHub 清單："+files.length+" 份 .md");return {files:files,mode:"tree"}}
+    }
+  }catch(e){L("GitHub 清單失敗："+e.message)}
+  var cached=treeCacheGet();
+  if(cached){L("清單讀唔到，用上次成功的清單："+cached.length+" 份");return {files:cached,mode:"cache"}}
+  var u=rawUrl(GH.dir+"/_index.json");L("改用索引 "+u);
+  var r2=await fetch(u,{cache:"no-store"});
+  L("index HTTP "+r2.status);
+  if(!r2.ok)throw Error("HTTP "+r2.status);
+  var idx=JSON.parse(await r2.text());
+  if(!idx.files||!idx.files.length)throw Error("索引沒有 files");
+  return {files:idx.files.map(function(f){return f}),mode:"index"};
+}
+
+/* ---------- 啟動 ---------- */
+(async function init(){
+  try{
+    var got=await loadList();
+    index={files:got.files};index.mode=got.mode;
+    setCount(index.files.length+" 份文件");
+    var dh=$("docHead");if(dh)dh.textContent="文件清單（"+index.files.length+" 份）";
+    renderDocs();
+    L("文件清單 OK："+index.files.length+" 份（"+got.mode+"）");
+    startPreload();
+  }catch(e){
+    var n=$("note");
+    if(n)n.innerHTML="讀不到文件清單："+esc(e.message)+
+      "<br>若顯示 Failed to fetch，代表這個環境（Canvas 沙盒／CSP）不允許對外連線。";
+    L("ERR "+e.message);
+  }
+})();
+
+/* ---------- 主流程 ---------- */
+$("askBtn").onclick=async function(){
+  var q=$("q").value.trim(),box=$("answer");
+  if(!q||busy)return;
+  if(!index){box.innerHTML='<div class="err">知識庫未載入，請開右上角 ⚙ 看「診斷紀錄」。</div>';return}
+  busy=true;$("askBtn").disabled=true;lsSet("sk_lastq",q);
+  var k=parseInt(lsGet("sk_k"),10)||8,hits=null;
+  try{
+    var total=index.files.length;
+    if(cache.size<total){
+      box.innerHTML=spin("正在下載 "+total+" 份文件… <b id=\"prog\">"+cache.size+" / "+total+"</b>");
+      pre.notify=function(d,t){var e=$("prog");if(e)e.textContent=d+" / "+t};
+      await startPreload();
+      pre.notify=null;
+    }
+    box.innerHTML=spin("正在你的文件庫內檢索…");
+    hits=await retrieve(q,k,index.files);
+    if(!hits.length||hits[0].sc<=0){box.innerHTML='<div class="err">文件中找不到相關內容。</div>';return}
+    box.innerHTML=spin("正在閱讀 "+hits.length+" 份文件並作答…");
+    var PER_DOC=30000,CTX_MAX=90000,used=0;
+    var ctx=hits.map(function(h){
+      if(used>=CTX_MAX)return "";
+      var mk=h.f.pages_ocr?"（注意：此檔有 "+h.f.pages_ocr+"/"+h.f.pages+" 頁經 OCR，可能有錯字）":"";
+      var body;
+      if(h.excerpt&&!h.excerpt.whole){
+        body="（全份 "+(h.f.pages||"?")+" 頁，以下是與問題最相關的段落）\n"+
+          h.excerpt.parts.map(function(p){return "【第 "+(p.page||"?")+" 頁】\n"+p.text}).join("\n\n");
+      }else{
+        body=h.text.slice(0,PER_DOC);
+      }
+      var piece="### 檔案："+(h.f.top?h.f.top+"/":"")+h.f.md_file+" "+mk+"\n"+body;
+      used+=piece.length;
+      return piece;
+    }).filter(Boolean).join("\n\n---\n\n");
+    var payload="以下是官方文件內容：\n\n"+ctx+"\n\n問題："+q;
+    var out=await askGemini(SYSTEM,payload);
+    showAnswer(out.text,hits,out.model,out.truncated);
+  }catch(e){
+    L("ERR "+e.message);
+    if(e.auth||e.net)showFallback(q,hits,e);
+    else box.innerHTML='<div class="err">'+esc(e.message)+'</div>'+
+      '<p class="warn">如果重試都一樣，開右上角 ⚙ 看「診斷紀錄」。</p>';
+  }finally{busy=false;$("askBtn").disabled=false}
+};
+
+function fmt(t){
+  return esc(t).replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");
+}
+/* 把「- 」開頭的行變成真正列點；非列點的行照舊分段，唔會炒成一坨 */
+function listify(t){
+  var lines=String(t||"").replace(/\r/g,"").split("\n"),out=[],buf=[],inList=false;
+  function closeList(){if(inList){out.push("</ul>");inList=false}}
+  function flushBuf(){if(buf.length){out.push('<div class="pl">'+buf.map(fmt).join("<br>")+"</div>");buf=[]}}
+  lines.forEach(function(raw){
+    var ln=raw.replace(/\s+$/,"");
+    var m=/^\s*(?:[-*•・‧▪]|\d{1,2}[.)、]|[（(]\d{1,2}[)）])\s*(.*)$/.exec(ln);
+    if(m&&m[1].trim()){
+      flushBuf();
+      if(!inList){out.push('<ul class="li">');inList=true}
+      out.push("<li>"+fmt(m[1])+"</li>");
+    }else if(!ln.trim()){
+      closeList();flushBuf();
+    }else{
+      closeList();buf.push(ln);
+    }
+  });
+  closeList();flushBuf();
+  return out.join("");
+}
+function parseAnswer(raw){
+  var t=String(raw||"").trim();
+  var a=t.indexOf("【答案】"),b=t.indexOf("【要點】"),c=t.indexOf("【根據】");
+  var head="",pts="",src="";
+  if(a>=0){
+    var headEnd=(b>a)?b:((c>a)?c:t.length);
+    head=t.slice(a+4,headEnd);
+  }else{
+    head=t;
+  }
+  if(b>=0){
+    var ptsEnd=(c>b)?c:t.length;
+    pts=t.slice(b+4,ptsEnd);
+  }
+  if(c>=0)src=t.slice(c+4);
+  var empty=function(x){x=(x||"").trim();return (!x||x==="- 無"||x==="無"||x==="（無）")?"":x};
+  return {head:(head||t).trim(),pts:empty(pts),src:empty(src)};
+}
+function showAnswer(raw,hits,model,truncated){
+  var p=parseAnswer(raw);
+  var html='<div class="answrap"><div class="tagline"><span class="pill">答案</span></div>';
+  html+='<div id="ans">'+fmt(p.head)+"</div>";
+  if(p.pts){
+    var n=(p.pts.match(/^\s*(?:[-*•・‧▪]|\d{1,2}[.)、])/gm)||[]).length;
+    html+='<details class="blk"><summary>具體要點<span class="cnt">'+n+' 項</span></summary><div class="pt">'+listify(p.pts)+"</div></details>";
+  }
+  var files=hits.map(function(h){
+    var t=h.f.pages_ocr?'<span class="badge">OCR</span>':"";
+    var pg=(h.excerpt&&!h.excerpt.whole&&h.excerpt.pages)?" · 第 "+h.excerpt.pages+" 頁":"";
+    return "<div><b>"+esc((h.f.top?h.f.top+"/":"")+h.f.md_file)+"</b>"+t+pg+" 相關度 "+h.sc+"</div>";
+  }).join("");
+  html+='<details class="blk"><summary>根據<span class="cnt">'+hits.length+' 份</span></summary><div class="pt">'+
+    (p.src?listify(p.src)+"<hr>":"")+'<div class="fl">'+files+"</div></div></details>";
+  if(truncated)html+='<p class="warn">答案去到一半就斷咗（模型輸出上限）。可以再問一次，或者把問題問窄一點。</p>';
+  html+="</div>";
+  $("answer").innerHTML=html;
+}
+
+/* 代理認證唔通時：仍然把已檢索到的原文同提示詞交返用戶，可以貼去自己的 Gemini */
+function showFallback(q,hits,err){
+  var lines=[];
+  if(hits&&hits.length){
+    lines.push("# 以下是官方文件內容：\n");
+    hits.forEach(function(h){lines.push("### 檔案："+h.f.md_file+"\n"+h.text.slice(0,6000))});
+  }
+  lines.push("\n# 問題："+q+"\n\n"+SYSTEM);
+  var full=lines.join("\n\n---\n\n");
+  window.__skPayload=full;
+  var html='<div class="answrap"><div class="tagline"><span class="pill gold">連線失敗</span></div>';
+  html+='<div class="err">'+esc(err.message)+"</div>"+
+    '<p class="warn">已在你嘅文件庫內檢索到下列文件（問句冇外傳）。可以撳「複製」再貼去 Gemini 問，或者稍後再試。</p>';
+  if(hits&&hits.length){
+    html+=hits.map(function(h){
+      return '<div class="src"><b>'+esc(h.f.md_file)+"</b>（相關度 "+h.sc+"）</div>"+
+        '<pre class="md">'+esc(h.text.slice(0,2000))+"</pre>";
+    }).join("");
+    html+='<div style="margin-top:12px"><button class="cta" id="copyBtn">複製檢索內容 + 提示詞</button></div>';
+  }
+  html+="</div>";
+  $("answer").innerHTML=html;
+  var cb=$("copyBtn");
+  if(cb)cb.onclick=async function(){
+    try{await navigator.clipboard.writeText(full);cb.textContent="已複製"}
+    catch(e){cb.textContent="複製失敗，請手動選取上方原文"}
+  };
+}
+
+$("clearBtn").onclick=function(){
+  $("q").value="";
+  $("answer").innerHTML='<span class="empty"><span class="dot"></span>輸入問題，然後按「問」。</span>';
+  $("q").focus();
+};
+$("q").addEventListener("keydown",function(e){if((e.ctrlKey||e.metaKey)&&e.key==="Enter")$("askBtn").click()});
+
+/* ---------- 文件清單 ---------- */
+function renderDocs(){
+  var box=$("docs"),q=($("filter").value||"").trim().toLowerCase();
+  box.innerHTML="";
+  index.files.filter(function(f){
+    return !q||((f.md_file+" "+(f.title||"")+" "+f.category)||"").toLowerCase().indexOf(q)>=0;
+  }).forEach(function(f){
+    var d=document.createElement("div");d.className="doc";
+    d.textContent=String(f.md_file).split("/").pop().replace(/\.md$/,"")+"  ·  "+(f.top||f.category||"");
+    d.onclick=async function(){
+      box.querySelectorAll(".doc.on").forEach(function(x){x.classList.remove("on")});
+      d.classList.add("on");
+      $("preview").textContent="載入中…";
+      try{$("preview").textContent=await getText(f)}
+      catch(e){$("preview").textContent="讀取失敗："+e.message}
+    };
+    box.appendChild(d);
+  });
+}
+$("filter").addEventListener("input",function(){if(index)renderDocs()});
+
+/* 齒輪：收起／展開工具面板 */
+var gear=$("gear");
+function toggleTools(){
+  var t=$("tools");t.hidden=!t.hidden;
+  gear.className="iconbtn"+(t.hidden?"":" on");
+}
+if(gear)gear.onclick=toggleTools;
+
+/* 例子 chip：一撳即問 */
+var chips=document.querySelectorAll(".chip");
+for(var ci=0;ci<chips.length;ci++){
+  chips[ci].onclick=function(){
+    $("q").value=this.textContent;
+    if($("askBtn").onclick)$("askBtn").onclick();
+  };
+}
+
+/* 測試用接口（不影響介面） */
+try{window.__sk={get index(){return index},cache:cache,retrieve:retrieve,ensure:ensure,tokens:tokens}}catch(e){}
+L("STARTUP origin="+location.origin);
+if(location.hash==="#tools")toggleTools();
+})();
+</script></body></html>
