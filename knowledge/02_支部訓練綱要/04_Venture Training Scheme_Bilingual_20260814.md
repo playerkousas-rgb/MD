@@ -13,6 +13,7 @@ ocr_engine: rapidocr
 **V** 深 **S** 童軍訓練綱要 Venture Scout Training Scheme 資
 
 <!-- p.2 -->
+<!-- ch: 深資童軍支部 支部徽章 -->
 ## 深資童軍支部 支部徽章 
 
 **火炬一直以來與深資童軍支部有密切的關係， 榮譽童軍獎章領袖標誌及榮譽童軍獎章都是 以火炬圖案為主。而火炬本身形狀似“V”字， 加上火炬上呈“S”狀之火焰，正是深資童軍支 部的簡寫“VS”。** 
@@ -39,6 +40,7 @@ ocr_engine: rapidocr
 3
 
 <!-- p.4 -->
+<!-- ch: 前 言 Foreword -->
 #### 前  言 **Foreword** 
 
 在整個童軍運動中，深資童軍支部將涵括15 至20 歲（即21 歲生日前 一天）的成員，在這一階段的青少年成員，往往面對各種困難。由學業 環境急速轉變，從高中至面對公開試到大專/ 大學或職場的過渡，帶來 巨大不確定性；同時，他們需從青少年逐漸蛻變為成年人，面對社會責 任、身份轉變及生活平衡等的挑戰，正正就是本綱要提供的學習需要： 
@@ -56,6 +58,7 @@ ocr_engine: rapidocr
 4
 
 <!-- p.5 -->
+<!-- ch: 目 錄 Contents -->
 #### 目  錄 **Contents** 
 
 |**序**<br>|3|目<br>目<br><br>|
@@ -107,6 +110,7 @@ ocr_engine: rapidocr
 6<br><!-- End of picture text -->
 
 <!-- p.7 -->
+<!-- ch: 第七章 附 錄 -->
 ###### **第七章 附 錄** 
 
 |**全港深資童軍錦標賽**|65||
@@ -120,6 +124,7 @@ ocr_engine: rapidocr
 7
 
 <!-- p.8 -->
+<!-- ch: 引 言 -->
 #### 引  言 
 
 #### **Introduction** 
@@ -202,6 +207,7 @@ ocr_engine: rapidocr
 10
 
 <!-- p.11 -->
+<!-- ch: 1.1 職責 -->
 ###### **年齡規限** 
 
 深資童軍支部的年齡規限是15 至20 歲。於年滿21 歲當日，其深資童軍身 分將自動結束。 
@@ -245,6 +251,7 @@ ocr_engine: rapidocr
 11
 
 <!-- p.12 -->
+<!-- ch: 2.1 職責 -->
 ###### **2. 執行委員會** 
 
 ###### 2.1 職責 
@@ -303,6 +310,7 @@ ocr_engine: rapidocr
 13
 
 <!-- p.14 -->
+<!-- ch: Uniform for Venture Scouts -->
 ##### 深資童軍制服 
 
 #### **Uniform for Venture Scouts** 
@@ -354,6 +362,7 @@ ocr_engine: rapidocr
 15
 
 <!-- p.16 -->
+<!-- ch: 第二章 深資童軍支部的訓練計劃 -->
 #### 第二章 深資童軍支部的訓練計劃 
 
 #### CHAPTER 2: Venture Scout Training Programme 
@@ -370,6 +379,7 @@ ocr_engine: rapidocr
 16
 
 <!-- p.17 -->
+<!-- ch: 會 員 章 Membership Badge -->
 #### 會 員 章 **Membership Badge** 
 
 會員章旨在幫助新加入的深資童軍認識其所屬之深資童軍團，以促進他 與其他團員間相互關係，並為彼等所接納。 
@@ -513,6 +523,7 @@ ocr_engine: rapidocr
 21
 
 <!-- p.22 -->
+<!-- ch: 榮 譽 童 軍 獎 章 Dragon Scout Award -->
 #### 榮 譽 童 軍 獎 章 **Dragon Scout Award** 
 
 深資童軍完成任何一個「深資童軍獎章」段章後，即可開始考取本獎章， 惟只可著手已完成段章的相對金帶。 
@@ -537,6 +548,7 @@ ocr_engine: rapidocr
 23
 
 <!-- p.24 -->
+<!-- ch: 深資童軍段章設計概念 -->
 # 深資童軍段章設計概念 
 
 ###### 活動策劃 
@@ -558,6 +570,7 @@ ocr_engine: rapidocr
 24
 
 <!-- p.25 -->
+<!-- ch: 活 動 策 劃 Project Badge -->
 #### 活 動 策 劃 **Project Badge** 
 
 目的︰ 
@@ -604,6 +617,7 @@ ocr_engine: rapidocr
 26
 
 <!-- p.27 -->
+<!-- ch: 社 會 服 務 Service Badge -->
 #### 社 會 服 務 **Service Badge** 
 
 目的︰ 
@@ -708,6 +722,7 @@ ocr_engine: rapidocr
 30
 
 <!-- p.31 -->
+<!-- ch: 多 元 技 能 Activity Badge -->
 #### 多 元 技 能 **Activity Badge** 
 
 目的︰ 
@@ -1006,6 +1021,7 @@ a. 營藝：
 40
 
 <!-- p.41 -->
+<!-- ch: 戶 外 探 險 Exploration Badge -->
 #### 戶 外 探 險 **Exploration Badge** 
 
 **目的︰** 
@@ -1268,6 +1284,7 @@ a. 營藝：
 52
 
 <!-- p.53 -->
+<!-- ch: 宗 教 章 Religious Badge -->
 #### 宗 教 章 **Religious Badge** 
 
 ###### **研習及考覈** 
@@ -1473,6 +1490,7 @@ a. 營藝：
 57
 
 <!-- p.58 -->
+<!-- ch: 社 區 參 與 章 -->
 #### 社 區 參 與 章 
 
 ##### **Community Involvement Badge** 
@@ -1536,6 +1554,7 @@ a. 營藝：
 60
 
 <!-- p.61 -->
+<!-- ch: 航空活動徽章 Air Activity Badges -->
 #### 航空活動徽章 **Air Activity Badges** 
 
 「空勤員章課程」分為初級空勤員章、中級空勤員章及高級空勤員章三 個階段課程，為深資童軍成員提供全面而富趣味的航空培訓，包括航空 知識、飛行知識及模擬飛行訓練三大範疇。徽章的設計亦加入代表飛行 訓練的螺旋槳及飛行之半翼，標誌成員以此作為邁向實際飛行的起步點。 
@@ -1551,6 +1570,7 @@ a. 營藝：
 61
 
 <!-- p.62 -->
+<!-- ch: 海上活動徽章 Sea Activity Badges -->
 #### 海上活動徽章 **Sea Activity Badges** 
 
 「童軍標準艇課程（深資童軍支部課程）」分為水手長章（三級童軍標 準艇證書）、副舵手章（四級童軍標準艇證書）及舵手章（五級童軍標 準艇證書）三個階段課程，為深資童軍成員提供進階之海上活動訓練。 如由童軍支部成員晉升為深資童軍支部成員，並已考獲三級童軍標準艇 證書，在晉升為深資童軍支部成員後，可直接佩戴深資童軍水手長章。 
@@ -1576,6 +1596,7 @@ a. 營藝：
 64
 
 <!-- p.65 -->
+<!-- ch: 第七章 附 錄 CHAPTER 7 : Appendices -->
 #### 第七章 附 錄 **CHAPTER 7 : Appendices** 
 
 詳情請參閱以下的網站： 
@@ -1601,6 +1622,7 @@ a. 營藝：
 67
 
 <!-- p.68 -->
+<!-- ch: 鳴謝 -->
 #### 鳴謝 
 
 #### **Acknowledgments** 
@@ -1892,6 +1914,7 @@ The General Meeting is the highest administration authority of a Venture Scout U
 79
 
 <!-- p.80 -->
+<!-- ch: 1.2 Composition -->
 ###### 1.2 Composition 
 
 All valid Venture Scout members. 

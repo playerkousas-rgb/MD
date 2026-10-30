@@ -259,6 +259,8 @@ function startPreload(){
     if(d===t){
       var chars=0;cache.forEach(function(v){chars+=v.length});
       setCount(index.files.length+" 份文件 · "+Math.round(chars/10000)+" 萬字");
+      var mk=0;cache.forEach(function(v){if(v.indexOf("<!-- ch:")>=0)mk++});
+      L("章節標記可用 "+mk+" / "+index.files.length+" 份（其餘 fall back 全文切段）");
       L("背景預載完成 "+cache.size+"/"+index.files.length+"，共 "+chars+" 字");
     }
   });
@@ -395,12 +397,35 @@ function docTitle(text){
   if(m)return m[1].replace(/^#+\s*/,"").trim();
   return body.slice(0,80).replace(/\s+/g," ");
 }
-/* 全庫切段：短文件整份當一段，長文件按 <!-- p.N --> 切頁後再切 ~2000 字 */
-function chunkList(text){
-  if(text.length<=SMALL)return [{page:0,text:text}];
-  var out=[];
-  splitPages(text).forEach(function(c){splitBig(c).forEach(function(x){if(x.text.trim())out.push(x)})});
+/* 全庫切段：短文件整份當一段，長文件按 <!-- p.N --> 切頁後再切 ~2000 字。
+   若檔案有 `<!-- ch: 章節 -->` 標記（由 tools/build_chapter_marks.py 產生），
+   每段會帶所屬章節；冇標記嘅檔案照舊，ch 留空 → 前端自然 fall back。 */
+function splitMarked(text){
+  var out=[],buf="",cur={page:0,ch:""};
+  var re2=/<!--\s*(?:p\.(\d+)[^>]*|ch:\s*([^>]*?))\s*-->/g,mm,last=0;
+  while((mm=re2.exec(text))){
+    buf=text.slice(last,mm.index);
+    if(buf.trim())out.push({page:cur.page,ch:cur.ch,text:buf});
+    last=re2.lastIndex;
+    if(mm[1]!==undefined)cur={page:parseInt(mm[1],10)||0,ch:cur.ch};
+    else cur={page:cur.page,ch:String(mm[2]||"").trim()};
+  }
+  buf=text.slice(last);
+  if(buf.trim())out.push({page:cur.page,ch:cur.ch,text:buf});
   return out;
+}
+function chunkList(text){
+  if(text.indexOf("<!-- ch:")<0){
+    if(text.length<=SMALL)return [{page:0,ch:"",text:text}];
+    var out=[];
+    splitPages(text).forEach(function(c){splitBig(c).forEach(function(x){if(x.text.trim())out.push({page:c.page,ch:"",text:x.text})})});
+    return out;
+  }
+  var res=[];
+  splitMarked(text).forEach(function(c){
+    splitBig(c).forEach(function(x){if(x.text.trim())res.push({page:c.page,ch:c.ch,text:x.text})});
+  });
+  return res;
 }
 /* 段落級 BM25：以前「先為文件打分、再取前 k 份」，40 萬字嘅書一定壓過一兩千字嘅守則，
    而書入面正確嘅一頁亦成日入唔到前 5 段。改成逐段評分（有長度正規化），
@@ -418,7 +443,8 @@ async function retrieve(question,k,files){
     var f=files[i],text=cache.get(pathOf(f));
     if(text===undefined)continue;
     chunkList(text).forEach(function(c){
-      unit.push({f:f,page:c.page,text:c.text,low:c.text.toLowerCase(),len:Math.max(c.text.length,80)});
+      unit.push({f:f,page:c.page,ch:c.ch||"",chLow:(c.ch||"").toLowerCase(),
+                 text:c.text,low:c.text.toLowerCase(),len:Math.max(c.text.length,80)});
     });
   }
   if(!unit.length)return [];
@@ -437,6 +463,16 @@ async function retrieve(question,k,files){
       s+=W[t]*(n*(K1+1))/(n+K1*(1-B+B*u.len/avg));
     });
     u.hit=hit;u.cover=cover;u.s=hit?(s+cover*0.6):0;   /* 命中越多「唔同」關鍵詞越前 */
+    /* 章節標題命中：問「制服帽」時，落在「3.3 制服帽、帽章及肩章」那章的段落優先 */
+    if(u.chLow){
+      /* 只算「實詞」命中：純數字／第X章／第X節 唔算，否則「第八章」會令步操手冊壓過新領袖手冊 */
+      var chHit=0;
+      toks.forEach(function(t){
+        if(/^[0-9０-９第章節篇部]+$/.test(t))return;
+        if(u.chLow.indexOf(t)>=0)chHit++;
+      });
+      u.chHit=chHit;   /* 只記錄，唔改分數：章節標題本身有 OCR 雜訊，唔應該影響文件排名 */
+    }else u.chHit=0;
   });
   var byPath=Object.create(null),order=[];
   unit.forEach(function(u){
@@ -470,6 +506,10 @@ async function retrieve(question,k,files){
     d.best=d.best*d.tboost*sboost*sct;
   });
   docs.sort(function(a,b){return b.best-a.best});
+  var nMk=docs.filter(function(d){
+    return (cache.get(pathOf(d.f))||"").indexOf("<!-- ch:")>=0;
+  }).length;
+  if(nMk)L("章節標記：入選文件中有 "+nMk+" 份可按章節抽段，其餘用全文切段");
   var dirs=catDirs(question);
   if(dirs.length){
     var pri=docs.filter(function(d){
@@ -481,16 +521,24 @@ async function retrieve(question,k,files){
   return docs.slice(0,k).map(function(d){
     if(d.chunks.length===1&&d.chunks[0].page===0){
       return {f:d.f,sc:Math.round(d.best*10)/10,text:cache.get(pathOf(d.f)),
-              excerpt:{whole:true,parts:null}};
+              excerpt:{whole:true,parts:null,chap:""}};
     }
     var seq=d.chunks,byScore=seq.slice().sort(function(a,b){return b.s-a.s});
-    /* 每份文件最多抽 6 段、合計 14,000 字：夠覆蓋規條，又唔會霸佔整份 prompt */
-    var picked=[],size=0;
-    for(var bi=0;bi<byScore.length;bi++){
+    /* 有章節標記而最佳段落所屬章節又對得上問題 → 先讀該章，唔會走去其他章亂抽 */
+    var best=byScore[0],chap=(best&&best.chHit>=2)?best.ch:"";
+    var picked=[],size=0,used={};
+    function take(u){if(!u||used[seq.indexOf(u)])return false;used[seq.indexOf(u)]=1;picked.push(u);size+=u.text.length;return true}
+    /* 先取「對題章節」內最高分 2 段 */
+    if(chap){
+      byScore.filter(function(u){return u.ch===chap}).slice(0,2).forEach(function(u){
+        if(picked.length<2&&size+u.text.length<=10000)take(u);
+      });
+    }
+    /* 其餘由全份最高分補上（防止章節標記有雜訊時漏掉正確頁） */
+    for(var bi=0;bi<byScore.length&&picked.length<4;bi++){
       var u=byScore[bi];
-      if(picked.length>=4)break;
-      if(picked.length>=2&&size+u.text.length>10000)break;
-      picked.push(u);size+=u.text.length;
+      if(size+u.text.length>10000)continue;
+      take(u);
     }
     var seen={},ps=[];
     picked.forEach(function(u){
@@ -502,7 +550,8 @@ async function retrieve(question,k,files){
     ps.sort(function(a,b){return a.page-b.page});
     var pages=[];ps.forEach(function(u){if(u.page&&pages.indexOf(u.page)<0)pages.push(u.page)});
     return {f:d.f,sc:Math.round(d.best*10)/10,text:"",
-            excerpt:{whole:false,parts:ps.map(function(u){return {page:u.page,text:u.text}}),
+            excerpt:{whole:false,chap:chap,
+                     parts:ps.map(function(u){return {page:u.page,ch:u.ch||"",text:u.text}}),
                      pages:pages.slice(0,14).join("、")}};
   });
 }
@@ -743,7 +792,9 @@ $("askBtn").onclick=async function(){
       var body;
       if(h.excerpt&&!h.excerpt.whole){
         body="（全份 "+(h.f.pages||"?")+" 頁，以下是與問題最相關的段落）\n"+
-          h.excerpt.parts.map(function(p){return "【第 "+(p.page||"?")+" 頁】\n"+p.text}).join("\n\n");
+          h.excerpt.parts.map(function(p){
+            return "【第 "+(p.page||"?")+" 頁"+(p.ch?"｜"+p.ch:"")+"】\n"+p.text;
+          }).join("\n\n");
       }else{
         body=h.text.slice(0,PER_DOC);
       }

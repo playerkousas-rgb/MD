@@ -8,6 +8,7 @@ ocr_engine: none
 ---
 
 <!-- p.1 -->
+<!-- ch: SCOUT ASSOCIATION OF HONG KONG -->
 # **SCOUT ASSOCIATION OF HONG KONG** 
 
 ## **Technical Note on Tendering and Management of Capital Works Projects** 
@@ -15,6 +16,7 @@ ocr_engine: none
 **November 2020** _(Latest update in January 2024)_
 
 <!-- p.2 -->
+<!-- ch: Contents Page -->
 ### **Technical Note on Tendering and Management of Capital Works Projects** 
 
 ### **Contents Page** 
@@ -61,6 +63,7 @@ ocr_engine: none
 7.2 Procedures for Handling Complaints 43
 
 <!-- p.4 -->
+<!-- ch: ANNEX -->
 #### **ANNEX** 
 
 - A Simplified Flow Charts illustrating Tendering and Management Procedures for Capital Works Projects 
@@ -72,6 +75,7 @@ ocr_engine: none
 - 9 Guidelines for Tender and Contract Negotiations 10 Standard Tender Report Format 11 Estate Branch Form EB003 – 工程視察紀錄表 12 Estate Branch Form EB004a – 工程完成的用家意見（承建商表現評級） 13 Estate Branch Form EB004b – 工程完成的用家意見（工程顧問表現評級） 14 Sample Tender Notice 15 Sample Tender Report for Minor Works of cost not exceeding HK$50,000.00 16 Sample Letter of Acceptance
 
 <!-- p.5 -->
+<!-- ch: ABBREVIATION -->
 Scout Association of Hong Kong – Technical Note on Tendering and Management of Capital Works Projects 
 
 #### **ABBREVIATION** 
@@ -328,6 +332,7 @@ Decisions by CWTB in the same context for projects procured by Estate Branch sha
 November 2020
 
 <!-- p.16 -->
+<!-- ch: 3.4 Types of Procurement -->
 Scout Association of Hong Kong – Technical Note on Tendering and Management of Capital Works Projects 
 
 scout units, including those cases where no quotations / tenders are accepted or tender exercises are cancelled, to HQTB for reference and record. In this regard Estate Branch will as necessary require procuring scout units / heads of procuring scout units to provide the relevant particulars. 
@@ -368,6 +373,7 @@ For project works and routine maintenance with an estimated project cost not exc
 November 2020
 
 <!-- p.18 -->
+<!-- ch: _Prequalified Tendering_ -->
 Scout Association of Hong Kong – Technical Note on Tendering and Management of Capital Works Projects 
 
 shortlist. Such an approval shall be in writing and simultaneously copied to Estate Branch for control / record purpose. For adhoc minor repair of estimated cost not exceeding HK$5,000.00 and funded by procuring scout unit, the head of the procuring scout unit is delegated with the authority by CWTB to approve the tenderer shortlist. 
@@ -568,6 +574,7 @@ November 2020
 November 2020
 
 <!-- p.26 -->
+<!-- ch: 4.8 Indemnity and Insurance -->
 Scout Association of Hong Kong – Technical Note on Tendering and Management of Capital Works Projects 
 
 completion of the contract until SAHK is fully satisfied, after a period of time, with the supplies delivered or the service provided. The amount of retention money is normally pitched at no more than 10% of the contract value. 
@@ -707,6 +714,7 @@ Contractors, where appropriate, shall also be required to submit declarations ( 
 November 2020
 
 <!-- p.33 -->
+<!-- ch: _Site visit_ -->
 ##### Scout Association of Hong Kong – Technical Note on Tendering and Management of Capital Works Projects 
 
 - **6.1 Correspondence with Tenderers** 
@@ -736,6 +744,7 @@ _Remark: Shall there be changes to the scope of the capital works contract befor
 November 2020
 
 <!-- p.34 -->
+<!-- ch: _Queries from tenderers_ -->
 Scout Association of Hong Kong – Technical Note on Tendering and Management of Capital Works Projects 
 
 - 6.2.5 The tender addendum shall be bound separately to a letter for – 
@@ -771,6 +780,7 @@ Scout Association of Hong Kong – Technical Note on Tendering and Management of
 November 2020
 
 <!-- p.35 -->
+<!-- ch: 6.3 Submission of Tenders -->
 Scout Association of Hong Kong – Technical Note on Tendering and Management of Capital Works Projects 
 
 tenderers of the revised tender closing date and/or time must be attached to tender documents which have not been collected at the time the tender period is extended. 
@@ -945,6 +955,7 @@ acceptance of a tender which fully complies with the tender conditions and speci
 November 2020
 
 <!-- p.43 -->
+<!-- ch: 6.8 Tender Negotiations -->
 Scout Association of Hong Kong – Technical Note on Tendering and Management of Capital Works Projects 
 
 contract to be awarded involves payments over a relatively long period, the tender assessment panel shall compare the tenders by discounting future payments to obtain the present value. 
@@ -2148,6 +2159,7 @@ Persons authorized to conduct negotiations with tenderers and contractors shall 
 1 of 1 (Annex 9)
 
 <!-- p.83 -->
+<!-- ch: Standard Tender Report Format -->
 **Annex 10 To Technical Note** 
 
 **Standard Tender Report Format** 
@@ -2329,6 +2341,7 @@ Signed by Budget HolderNotes
 5 of 5 (Annex 10)
 
 <!-- p.88 -->
+<!-- ch: 香 港 童 軍 總 會 -->
 **Annex 11 To Technical Note** 
 
 **Estate Branch Form EB003** 
@@ -2478,6 +2491,7 @@ Sample Tender Report for Minor Works<br>of cost not exceeding HK$50,000.00<br><!
 `頁` 1 `, 共 2 頁`
 
 <!-- p.93 -->
+<!-- ch: 有關建議須由總會之工程投標委員會所認可 -->
 `限閱` **(** `招標` **)** 
 
 ###### `香港童軍總會 招標書面報告` 

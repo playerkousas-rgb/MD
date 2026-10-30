@@ -8,6 +8,7 @@ ocr_engine: none
 ---
 
 <!-- p.1 -->
+<!-- ch: SCOUT ASSOCIATION OF HONG KONG -->
 # **SCOUT ASSOCIATION OF HONG KONG** 
 
 ## **Guidance Notes on Finance Matters** 
@@ -15,6 +16,7 @@ ocr_engine: none
 #### **October 2020**
 
 <!-- p.2 -->
+<!-- ch: CONTENTS -->
 ###### **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
 
 ### **CONTENTS** 
@@ -89,6 +91,7 @@ Preamble
 October 2020
 
 <!-- p.5 -->
+<!-- ch: 1.1 Introduction -->
 **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
 
 Page 5 of 38 
@@ -128,6 +131,7 @@ October 2020
 Section One – Corporate Governance
 
 <!-- p.6 -->
+<!-- ch: 2.1 Budgeting -->
 Page 6 of 38 
 
 ###### **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
@@ -188,6 +192,7 @@ Section Two – Annual Budgeting
 October 2020
 
 <!-- p.8 -->
+<!-- ch: 3.1 Segregation of Duties -->
 Page 8 of 38 
 
 ###### **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
@@ -235,6 +240,7 @@ Section Three - Income Collection & Receipt
 October 2020
 
 <!-- p.9 -->
+<!-- ch: 3.4 Income Collection Summary -->
 Page 9 of 38 
 
 ###### **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
@@ -258,6 +264,7 @@ Section Three - Income Collection & Receipt
 October 2020
 
 <!-- p.10 -->
+<!-- ch: 4.3 Surprise Cash Count -->
 **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
 
 Page 10 of 38 
@@ -293,6 +300,7 @@ Section Four - Safe Custody of Cash, Cheques & Valuables
 October 2020
 
 <!-- p.11 -->
+<!-- ch: 4.5 Write-Off -->
 Page 11 of 38 
 
 ###### **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
@@ -315,6 +323,7 @@ Section Four - Safe Custody of Cash, Cheques & Valuables
 October 2020
 
 <!-- p.12 -->
+<!-- ch: 5.2 Cheque and Cheque Book -->
 Page 12 of 38 
 
 ###### **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
@@ -352,6 +361,7 @@ Section Five - Bank Account & Cheque
 October 2020
 
 <!-- p.13 -->
+<!-- ch: 5.3 Signing of Cheques -->
 Page 13 of 38 
 
 ###### **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
@@ -383,6 +393,7 @@ Section Five - Bank Account & Cheque
 October 2020
 
 <!-- p.14 -->
+<!-- ch: 6.1 Imprest System -->
 Page 14 of 38 
 
 ###### **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
@@ -439,6 +450,7 @@ Section Six - Petty Cash
 October 2020
 
 <!-- p.16 -->
+<!-- ch: 7.1 Authorization of Payment -->
 Page 16 of 38 
 
 ###### **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
@@ -482,6 +494,7 @@ October 2020
 Section Seven - Payment
 
 <!-- p.17 -->
+<!-- ch: 7.3 Payment -->
 Page 17 of 38 
 
 ###### **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
@@ -552,6 +565,7 @@ October 2020
 Section Seven - Payment
 
 <!-- p.19 -->
+<!-- ch: 8.2 Programme Expenses -->
 Page 19 of 38 
 
 ###### **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
@@ -593,6 +607,7 @@ Page 19 of 38
 Section Eight - Programme Income & ExpensesOctober 2020
 
 <!-- p.20 -->
+<!-- ch: 9.2 Asset Register -->
 Page 20 of 38 
 
 ###### **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
@@ -642,6 +657,7 @@ Section Nine - Fixed Assets
 October 2020
 
 <!-- p.21 -->
+<!-- ch: 10.1 Books of Accounts -->
 Page 21 of 38 
 
 ###### **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
@@ -698,6 +714,7 @@ Section Ten - Accounting Records & Financial Reports
 October 2020
 
 <!-- p.23 -->
+<!-- ch: 11.1 Public Accountability -->
 Page 23 of 38 
 
 ###### **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
@@ -731,6 +748,7 @@ Section Eleven - Procurement
 October 2020
 
 <!-- p.24 -->
+<!-- ch: 11.5 Categories of Procurement -->
 Page 24 of 38 
 
 ###### **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
@@ -821,6 +839,7 @@ Section Eleven - Procurement
 October 2020
 
 <!-- p.26 -->
+<!-- ch: 11.6.4 Quotation -->
 Page 26 of 38 
 
 ###### **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
@@ -891,6 +910,7 @@ Section Eleven - Procurement
 October 2020
 
 <!-- p.28 -->
+<!-- ch: 11.6.5 Tender -->
 Page 28 of 38 
 
 ###### **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
@@ -977,6 +997,7 @@ Section Eleven - Procurement
 October 2020
 
 <!-- p.30 -->
+<!-- ch: 11.6.6 Centralized Procurement -->
 Page 30 of 38 
 
 ###### **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
@@ -1008,6 +1029,7 @@ Section Eleven - Procurement
 October 2020
 
 <!-- p.31 -->
+<!-- ch: 11.7 Payment for Procurements -->
 Page 31 of 38 
 
 ###### **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
@@ -1029,6 +1051,7 @@ Section Eleven - Procurement
 October 2020
 
 <!-- p.32 -->
+<!-- ch: 12.1 Donations -->
 Page 32 of 38 
 
 ###### **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
@@ -1099,6 +1122,7 @@ Section Twelve - Donations/Sponsorship & Fund Raising
 October 2020
 
 <!-- p.34 -->
+<!-- ch: 12.2.4 Commercial Sponsorship -->
 Page 34 of 38 
 
 ###### **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
@@ -1126,6 +1150,7 @@ Section Twelve - Donations/Sponsorship & Fund Raising
 October 2020
 
 <!-- p.35 -->
+<!-- ch: 13.2 Investment Committee -->
 Page 35 of 38 
 
 ###### **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
@@ -1165,6 +1190,7 @@ Section Thirteen - Investment
 October 2020
 
 <!-- p.36 -->
+<!-- ch: 13.3 Investment Decisions -->
 Page 36 of 38 
 
 ###### **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
@@ -1202,6 +1228,7 @@ Section Thirteen - Investment
 October 2020
 
 <!-- p.37 -->
+<!-- ch: 14.2 Accounts Receivable -->
 Page 37 of 38 
 
 ###### **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
@@ -1269,6 +1296,7 @@ October 2020
 October 2020
 
 <!-- p.40 -->
+<!-- ch: Income Collection Summary -->
 **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
 
 **Annex 3-2** 
@@ -1289,6 +1317,7 @@ October 2020
 October 2020
 
 <!-- p.41 -->
+<!-- ch: Register of Cheque Books -->
 **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
 
 **Annex 5-1** 
@@ -1319,6 +1348,7 @@ October 2020
 October 2020
 
 <!-- p.42 -->
+<!-- ch: Bank Reconciliation Statement -->
 **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
 
 **Annex 5-2** 
@@ -1343,6 +1373,7 @@ HK$ HK$ Balance per Bank Statement as at dd/mm/yyyy XXX Less : Unpresented chequ
 October 2020
 
 <!-- p.43 -->
+<!-- ch: Surprise Cash Check Record -->
 **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
 
 **Annex 6-1** 
@@ -1367,6 +1398,7 @@ _Note 2: Should there be any discrepancies found, investigation should be conduc
 October 2020
 
 <!-- p.44 -->
+<!-- ch: Claim Form for Minor Expenses -->
 **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
 
 **Annex 7-1** 
@@ -1387,6 +1419,7 @@ October 2020
 October 2020
 
 <!-- p.45 -->
+<!-- ch: Asset Register -->
 **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
 
 **Annex 9-1** 
@@ -1442,6 +1475,7 @@ October 2020
 October 2020
 
 <!-- p.47 -->
+<!-- ch: Comparison on Quotations -->
 **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
 
 **Annex 11-2** 
@@ -1471,6 +1505,7 @@ October 2020
 October 2020
 
 <!-- p.48 -->
+<!-- ch: Tender Opening Record -->
 **Scout Association of Hong Kong – Guidance Notes on Finance Matters** 
 
 **Annex 11-3** 
