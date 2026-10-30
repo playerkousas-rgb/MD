@@ -218,12 +218,46 @@ function resolveKey(){
 
 /* ---------- 抓 GitHub 上的 Markdown ---------- */
 function pathOf(f){return norm(f.md_path||(GH.dir+"/"+f.md_file))}
+/* ---------- 本機快取：第二次開頁唔使再下載 6 MB ---------- */
+var IDB=null,IDB_OK=true;
+function idbOpen(){
+  return new Promise(function(res,rej){
+    if(IDB)return res(IDB);
+    if(!IDB_OK||!window.indexedDB)return rej(Error("no idb"));
+    var r;
+    try{r=indexedDB.open("aiscout-cache",1)}catch(e){IDB_OK=false;return rej(e)}
+    r.onupgradeneeded=function(){var d=r.result;if(!d.objectStoreNames.contains("md"))d.createObjectStore("md")};
+    r.onsuccess=function(){IDB=r.result;res(IDB)};
+    r.onerror=function(){IDB_OK=false;rej(r.error)};
+  });
+}
+function idbKey(path){return "v2|"+GH.branch+"|"+path}
+async function idbGet(path){
+  if(!IDB_OK)return null;
+  try{
+    var db=await idbOpen();
+    return await new Promise(function(res,rej){
+      var q=db.transaction("md","readonly").objectStore("md").get(idbKey(path));
+      q.onsuccess=function(){res(q.result&&typeof q.result==="string"?q.result:null)};
+      q.onerror=function(){rej(q.error)};
+    });
+  }catch(e){return null}
+}
+function idbSet(path,text){
+  if(!IDB_OK)return;
+  idbOpen().then(function(db){
+    try{db.transaction("md","readwrite").objectStore("md").put(text,idbKey(path))}catch(e){}
+  }).catch(function(){});
+}
 async function getText(f){
   var path=pathOf(f),hit=cache.get(path);
   if(hit!==undefined)return hit;
+  var saved=await idbGet(path);
+  if(saved){cache.set(path,saved);fillMeta(saved,f);L("cache "+path+"（"+saved.length+" 字）");return saved}
   var r=await fetch(rawUrl(path),{cache:"no-store"});
   if(!r.ok)throw Error("HTTP "+r.status+" "+path);
-  var t=await r.text();cache.set(path,t);fillMeta(t,f);L("fetch "+path+"（"+t.length+" 字）");return t;
+  var t=await r.text();cache.set(path,t);fillMeta(t,f);idbSet(path,t);
+  L("fetch "+path+"（"+t.length+" 字）");return t;
 }
 /* 由 .md 本身的 front matter 補齊頁數／OCR 頁數，唔靠索引 */
 function fillMeta(text,f){
@@ -397,6 +431,75 @@ function docTitle(text){
   if(m)return m[1].replace(/^#+\s*/,"").trim();
   return body.slice(0,80).replace(/\s+/g," ");
 }
+/* == 送料 == 每份文件都一定要帶頁碼，模型就冇機會自己編「第 1 頁」。
+   總量上限 20,000 字：輸入字數直接決定首字延遲，而答一題其實只需 3–5 千字。 */
+var CTX_MAX=20000,DOC_MAX=6,SEC_CHARS=1500;
+function trimParts(parts,share){
+  var out=[],used=0;
+  for(var i=0;i<parts.length;i++){
+    var room=share-used;
+    if(room<=120)break;
+    var s=String(parts[i].text||"");
+    if(!s.trim())continue;
+    out.push({page:parts[i].page,ch:parts[i].ch||"",text:s.length>room?s.slice(0,room):s});
+    used+=Math.min(s.length,room);
+  }
+  return out;
+}
+function pageParts(text,share){
+  var ps=splitPages(text).filter(function(x){return String(x.text||"").trim()});
+  return trimParts(ps,share);
+}
+function buildCtx(hits){
+  var use=hits.slice(0,DOC_MAX),budget=CTX_MAX,out=[];
+  use.forEach(function(h,i){
+    var share=Math.floor(budget/Math.max(use.length-i,1));
+    var mk=h.f.pages_ocr?"（注意：此檔有 "+h.f.pages_ocr+"/"+h.f.pages+" 頁經 OCR，可能有錯字）":"";
+    var parts,note="";
+    if(h.excerpt&&!h.excerpt.whole&&h.excerpt.parts&&h.excerpt.parts.length){
+      parts=trimParts(h.excerpt.parts.map(function(p){
+        return {page:p.page,ch:p.ch,text:String(p.text||"").slice(0,SEC_CHARS)};
+      }),share);
+      note="（全份 "+(h.f.pages||"?")+" 頁；以下只列同問題最相關嘅頁）";
+    }else{
+      parts=pageParts(String(h.text||""),Math.max(share,1200));
+      note="";
+    }
+    if(!parts.length)return;
+    var body=parts.map(function(p){
+      var tag=p.page?("【第 "+p.page+" 頁"+(p.ch?"｜"+p.ch:"")+"】"):("【未標頁碼"+(p.ch?"｜"+p.ch:"")+"】");
+      return tag+"\n"+p.text;
+    }).join("\n\n");
+    var piece="### 檔案："+(h.f.top?h.f.top+"/":"")+h.f.md_file+" "+mk+"\n"+note+"\n"+body;
+    budget-=Math.min(piece.length,budget);
+    out.push(piece);
+  });
+  return out.join("\n\n---\n\n");
+}
+/* == 引用核對 == 每條【根據】嘅引文，必須真係喺我哋送出嘅原文出現；對唔上就唔顯示。 */
+var LAST_CTX="";
+function normQ(s){
+  return String(s||"").replace(/[\s\u3000，,。．.、：:；;「」『』（）()〈〉《》【】\-—…!！?？"'“”‘’|\/]/g,"").toLowerCase();
+}
+function verifyCites(src,ctx){
+  if(!src)return {text:"",ok:0,bad:0,all:0};
+  var C=normQ(ctx),lines=String(src).split(/\r?\n/),keep=[],drop=[],ok=0,bad=0;
+  lines.forEach(function(ln){
+    var m=/^\s*(?:[-*•・]|\d{1,2}[.)、])\s*(.+)$/.exec(ln);
+    if(!m){if(ln.trim())keep.push(ln);return}
+    var body=m[1].trim(),k=Math.max(body.lastIndexOf("："),body.lastIndexOf(":"));
+    var q=k>=0?body.slice(k+1).trim():body;
+    var nq=normQ(q);
+    var heading=/^第[一二三四五六七八九十百零〇0-9]+[章節篇部]/.test(q)||/手冊$|指引$|守則$/.test(q);
+    var hit=nq.length>=8&&!heading&&C.indexOf(nq.slice(0,Math.min(nq.length,40)))>=0;
+    if(hit){ok++;keep.push(ln)}
+    else{bad++;drop.push(ln)}
+  });
+  /* 全部對唔上：寧願保留並標示「未能核實」，都唔好假裝有引用 */
+  if(ok===0&&bad>0){keep=keep.concat(drop.map(function(x){return x+"　（未能核實）"}))}
+  return {text:keep.join("\n"),ok:ok,bad:(ok===0?0:bad),all:ok+bad};
+}
+
 /* 全庫切段：短文件整份當一段，長文件按 <!-- p.N --> 切頁後再切 ~2000 字。
    若檔案有 `<!-- ch: 章節 -->` 標記（由 tools/build_chapter_marks.py 產生），
    每段會帶所屬章節；冇標記嘅檔案照舊，ch 留空 → 前端自然 fall back。 */
@@ -576,7 +679,9 @@ var SYSTEM=[
   "規則二：不可以由概括條文推論出某項活動被禁止。例如問「可否飲酒」，而文件只寫「嚴禁違反本港法律的活動，如醉酒鬧事」或「嚴禁擾亂公眾秩序」，"+
   "那就只可以照抄該條文，並在【答案】寫「文件中未直接禁止（只列明…）」，絕對不可以答「不可以」。同理，「保持安靜」「必須離營」「嚴禁生火」都不等於禁止其他活動。",
   "規則三：問某個場所（例如某個營地）時，只可以用該場所自己的規則作答；其他場所的規則只可以在【要點】註明「（另一場地）」，不可以當成同一規定。",
-  "規則四：【根據】每一點必須寫出檔名及頁碼，該句必須真的在文件原文出現過；沒有原文就不要寫那一點。",
+  "規則四：【根據】每一點必須寫出檔名及頁碼，該句必須真的在文件原文出現過；沒有原文就不要寫那一點。",+
+  "規則四之一：頁碼只可以用我哋提供嘅「【第 N 頁】」標記；如果該段標示「【未標頁碼】」，就寫「（未標頁碼）」，絕對唔可以自己填「第 1 頁」。",+
+  "規則四之二：引文要逐字照抄（10–40 字），唔可以改寫、唔可以只寫書名或章節標題；我哋會用程式逐字核對，對唔上嘅引文會被刪除。",
   "規則五：文件裡的「次序／排位次序 1–18」係職級先後，唔係座位號。問座位時，座位數以實際出席人數為準，按該次序由中間向外、左右交替排；"+
   "文件若沒有講缺席／補位如何處理，就要講清楚「4 號係職級序位、實際坐第 X 位」，唔可以把序位當座位照抄。",
   "規則六：文件只在一欄（例如「地域舉辦的活動」）列出嘅職級，唔可以直接套用到另一欄（「區舉辦的活動」）；要講明係按同級對稱推論。",
@@ -706,6 +811,69 @@ async function askGemini(system,user){
   throw err;
 }
 
+/* ---------- 串流：邊生成邊顯示，唔使等足全份答案 ---------- */
+async function streamOnce(model,body,onText){
+  var ctrl=new AbortController(),tm=setTimeout(function(){ctrl.abort()},150000);
+  var key=resolveKey();
+  var url=API_BASE+encodeURIComponent(model)+":streamGenerateContent?alt=sse"+(key?"&key="+encodeURIComponent(key):"");
+  var res;
+  try{
+    res=await fetch(url,{method:"POST",credentials:"include",
+      headers:{"Content-Type":"application/json"},signal:ctrl.signal,body:JSON.stringify(body)});
+  }catch(e){
+    if(e&&e.name==="AbortError")throw tag(Error("Gemini 串流超過 150 秒"),{soft:true});
+    throw tag(Error("串流請求失敗："+((e&&e.message)||e)),{net:true});
+  }finally{clearTimeout(tm)}
+  if(!res.ok){
+    var raw=await res.text().catch(function(){return ""}),msg="HTTP "+res.status;
+    try{var j=JSON.parse(raw);msg=(j.error&&j.error.message)||msg}catch(e){}
+    throw tag(Error(msg),{status:res.status,
+      auth:res.status===401||res.status===403||/api key|credential|permission|unauthor|oauth|login/i.test(msg),
+      nosuch:res.status===404||/model.*(not found|not exist|not supported|unsupported|invalid|deprecated)/i.test(msg)});
+  }
+  var reader=res.body.getReader(),dec=new TextDecoder(),buf="",text="",fin="";
+  for(;;){
+    var r=await reader.read();
+    if(r.done)break;
+    buf+=dec.decode(r.value,{stream:true});
+    var nl;
+    while((nl=buf.indexOf("\n"))>=0){
+      var line=buf.slice(0,nl).replace(/\r$/,"");buf=buf.slice(nl+1);
+      if(line.indexOf("data:")!==0)continue;
+      var js=line.slice(5).trim();
+      if(!js||js==="[DONE]")continue;
+      var d;try{d=JSON.parse(js)}catch(e){continue}
+      var c=(d.candidates||[])[0]||{};
+      if(c.finishReason)fin=c.finishReason;
+      var add=((c.content&&c.content.parts)||[]).map(function(p){return p.text||""}).join("");
+      if(add){text+=add;if(onText)onText(text)}
+    }
+  }
+  if(!text)throw tag(Error("串流沒有回傳內容"),{soft:true});
+  return {text:text,finish:fin};
+}
+async function askGeminiStream(system,payload,onText){
+  var list=good?[good].concat(MODELS.filter(function(x){return x!==good})):MODELS.slice();
+  for(var i=0;i<list.length;i++){
+    var m=list[i];
+    try{
+      var body={systemInstruction:{parts:[{text:system}]},
+        contents:[{role:"user",parts:[{text:payload}]}],
+        generationConfig:{temperature:0.1,maxOutputTokens:maxOutFor(m)}};
+      if(/2\.5-flash/i.test(m))body.generationConfig.thinkingConfig={thinkingBudget:0};
+      var r=await streamOnce(m,body,onText);
+      good=m;
+      L("串流 OK ← "+m+"（"+r.text.length+" 字）");
+      return {model:m,text:r.text,truncated:(r.finish==="MAX_TOKENS")};
+    }catch(e){
+      L("串流失敗 ← "+m+"："+e.message);
+      if(i===list.length-1)throw e;
+      if(e.auth)throw e;
+      if(!(e.nosuch||e.status===400||e.status===404))throw e;
+    }
+  }
+}
+
 /* ---------- 文件清單：優先問 GitHub「目錄內有咩 .md」，所以新檔案唔使改索引 ---------- */
 var TREE_URL="https://api.github.com/repos/"+GH.owner+"/"+GH.repo+"/git/trees/"+GH.branch+"?recursive=1";
 function treeCacheGet(){try{var raw=localStorage.getItem("sk_tree");if(!raw)return null;var o=JSON.parse(raw);return (o&&o.f&&o.f.length)?o.f:null}catch(e){return null}}
@@ -784,27 +952,15 @@ $("askBtn").onclick=async function(){
     box.innerHTML=spin("正在你的文件庫內檢索…");
     hits=await retrieve(q,k,index.files);
     if(!hits.length||hits[0].sc<=0){box.innerHTML='<div class="err">文件中找不到相關內容。</div>';return}
-    box.innerHTML=spin("正在閱讀 "+hits.length+" 份文件並作答…");
-    var PER_DOC=30000,CTX_MAX=120000,used=0;
-    var ctx=hits.map(function(h){
-      if(used>=CTX_MAX)return "";
-      var mk=h.f.pages_ocr?"（注意：此檔有 "+h.f.pages_ocr+"/"+h.f.pages+" 頁經 OCR，可能有錯字）":"";
-      var body;
-      if(h.excerpt&&!h.excerpt.whole){
-        body="（全份 "+(h.f.pages||"?")+" 頁，以下是與問題最相關的段落）\n"+
-          h.excerpt.parts.map(function(p){
-            return "【第 "+(p.page||"?")+" 頁"+(p.ch?"｜"+p.ch:"")+"】\n"+p.text;
-          }).join("\n\n");
-      }else{
-        body=h.text.slice(0,PER_DOC);
-      }
-      var piece="### 檔案："+(h.f.top?h.f.top+"/":"")+h.f.md_file+" "+mk+"\n"+body;
-      used+=piece.length;
-      return piece;
-    }).filter(Boolean).join("\n\n---\n\n");
-    /* 第一步：核對員逐段指出原文；第二步才作答（可大幅減少「拿錯料硬答」） */
+    box.innerHTML=spin("正在閱讀 "+Math.min(hits.length,DOC_MAX)+" 份文件並作答…");
+    var ctx=buildCtx(hits);
+    LAST_CTX=ctx;
+    /* 第一步：核對員。信心「高」就跳過 —— 兩次呼叫等於雙倍等待，而高分已經代表直接命中。 */
+    var top=hits[0]?hits[0].sc:0;
+    var conf=top>=25?"高":(top>=12?"中":"低");
+    L("檢索信心 "+conf+"（最高分 "+top+"），入選 "+hits.length+" 份");
     var check="";
-    try{
+    if(conf!=="高")try{
       box.innerHTML=spin("第一步：核對邊份文件真係有原文答到…");
       var ev=hits.slice(0,6).map(function(h){
         var body;
@@ -823,17 +979,25 @@ $("askBtn").onclick=async function(){
     }catch(e1){
       L("自我檢查失敗（略過，直接作答）："+e1.message);
     }
-    box.innerHTML=spin("第二步：作答（已納入查證結果）…");
-    var top=hits[0]?hits[0].sc:0;
-    var conf=top>=25?"高":(top>=12?"中":"低");
-    L("檢索信心 "+conf+"（最高分 "+top+"），入選 "+hits.length+" 份");
+    box.innerHTML=spin("正在作答…");
     var payload="以下是官方文件內容（檢索信心："+conf+"）。"+
       (conf==="低"?"「低」代表呢批文件可能同問題無關：除非搵到直接對應嘅原文，否則【答案】要寫「文件中未提及」。":"")+
       (check?("\n\n【第一步查證結果（核對員原文摘錄）】\n"+check+
         "\n作答規則：核對員指「沒有」或所有條目都只是提到相關字眼而冇答案時，【答案】必須寫「文件中未提及」，【要點】改為建議可查閱的文件類別。"):"")+
       "\n\n"+ctx+"\n\n問題："+q;
-    var out=await askGemini(SYSTEM,payload);
-    showAnswer(out.text,hits,out.model,out.truncated);
+    var out=null;
+    try{
+      out=await askGeminiStream(SYSTEM,payload,function(partial){
+        box.innerHTML='<div style="white-space:pre-wrap;font:15px/1.75 var(--ui,system-ui);line-height:1.75;color:var(--tx,#e7f0ea)">'+
+          esc(partial)+'<span style="opacity:.5">▌</span></div>';
+      });
+    }catch(e2){
+      if(e2&&(e2.auth||e2.net))throw e2;
+      L("串流失敗，改用普通請求："+e2.message);
+      box.innerHTML=spin("正在作答…");
+      out=await askGemini(SYSTEM,payload);
+    }
+    showAnswer(out.text,hits.slice(0,DOC_MAX),out.model,out.truncated);
   }catch(e){
     L("ERR "+e.message);
     if(e.auth||e.net)showFallback(q,hits,e);
@@ -886,6 +1050,9 @@ function parseAnswer(raw){
 }
 function showAnswer(raw,hits,model,truncated){
   var p=parseAnswer(raw);
+  var vv=verifyCites(p.src,LAST_CTX);   /* 引文必須真係喺送出嘅原文出現 */
+  p.src=vv.text;
+  if(vv.all)L("引用核對：可用 "+vv.ok+" 條，對唔上 "+(vv.all-vv.ok)+" 條");
   var html='<div class="answrap"><div class="tagline"><span class="pill">答案</span></div>';
   html+='<div id="ans">'+fmt(p.head)+"</div>";
   if(p.pts){
@@ -897,7 +1064,8 @@ function showAnswer(raw,hits,model,truncated){
     var pg=(h.excerpt&&!h.excerpt.whole&&h.excerpt.pages)?" · 第 "+h.excerpt.pages+" 頁":"";
     return "<div><b>"+esc((h.f.top?h.f.top+"/":"")+h.f.md_file)+"</b>"+t+pg+" 相關度 "+h.sc+"</div>";
   }).join("");
-  html+='<details class="blk"><summary>根據<span class="cnt">'+hits.length+' 份</span></summary><div class="pt">'+
+  html+='<details class="blk"><summary>根據<span class="cnt">'+hits.length+' 份'+
+    (vv.all?(" · 引文已核對 "+vv.ok+"/"+vv.all):"")+'</span></summary><div class="pt">'+
     (p.src?listify(p.src)+"<hr>":"")+'<div class="fl">'+files+"</div></div></details>";
   if(truncated)html+='<p class="warn">答案去到一半就斷咗（模型輸出上限）。可以再問一次，或者把問題問窄一點。</p>';
   html+="</div>";
